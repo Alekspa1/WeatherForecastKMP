@@ -7,11 +7,10 @@ import com.drag0n.weatherforecastkmp.data.repository.WeatherImp
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.WeatherRepository
 import com.drag0n.weatherforecastkmp.domain.useCases.GetAstronomyUseCase
-import com.drag0n.weatherforecastkmp.domain.useCases.GetCoordInIpUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
-import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
+import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.MyViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -26,6 +25,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
+
 expect val moduleLocation: Module
 
 

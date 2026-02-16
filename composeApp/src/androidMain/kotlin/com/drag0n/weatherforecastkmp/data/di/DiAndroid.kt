@@ -1,6 +1,5 @@
 package com.drag0n.weatherforecastkmp.data.di
 
-import com.drag0n.weatherforecastkmp.data.repository.GetcoordInIpImpl
 import com.drag0n.weatherforecastkmp.data.repository.LocationAndroidImpl
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.PermissionRepository

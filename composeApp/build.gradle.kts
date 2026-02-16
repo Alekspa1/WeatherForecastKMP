@@ -1,5 +1,3 @@
-import com.google.common.jimfs.Configuration.windows
-import com.sun.java.swing.plaf.windows.resources.windows
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 

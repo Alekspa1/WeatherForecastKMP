@@ -8,27 +8,16 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.drag0n.weatherforecastkmp.domain.model.Coord
-
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.PermissionRepository
-import com.drag0n.weatherforecastkmp.domain.useCases.GetCoordInIpUseCase
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.ResolvableApiException
-import kotlin.getValue
-
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-
 import com.huawei.hms.api.HuaweiApiAvailability
-import com.huawei.hms.location.LocationCallback
-
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 class LocationAndroidImpl(private val context: Context, private val locationInIp: LocationRepository) : LocationRepository, PermissionRepository {
