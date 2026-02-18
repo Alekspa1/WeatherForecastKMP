@@ -4,6 +4,28 @@ class LocationIosImpl(
 
     private val locationManager = CLLocationManager()
 
+    // 1. Метод специально для iOS (его нет в общем интерфейсе)
+    fun requestIosPermission() {
+        val status = locationManager.authorizationStatus
+        
+        when (status) {
+            kCLAuthorizationStatusNotDetermined -> {
+                // Первый запрос — показываем системное окно
+                locationManager.requestWhenInUseAuthorization()
+            }
+            kCLAuthorizationStatusDenied, kCLAuthorizationStatusRestricted -> {
+                // Если уже запретили — отправляем в настройки iOS
+                val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString)
+                if (settingsUrl != null) {
+                    UIApplication.sharedApplication.openURL(settingsUrl)
+                }
+            }
+            else -> {
+                // Уже разрешено или системное ограничение
+            }
+        }
+    }
+
     override fun isPermissionGranted(permission: String): Boolean {
         val status = locationManager.authorizationStatus
         return status == kCLAuthorizationStatusAuthorizedWhenInUse || 
@@ -15,18 +37,19 @@ class LocationIosImpl(
     }
 
     override suspend fun getCurrentLocation(): Coord? {
-        // Если разрешений нет, сразу идем в поиск по IP
+        // Если разрешений нет — сразу используем поиск по IP
         if (!isPermissionGranted("")) {
             return locationInIp.getCurrentLocation()
         }
 
         return suspendCancellableCoroutine { cont ->
+            // Создаем делегат для получения ответа от GPS
             val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
                 override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
                     val locations = didUpdateLocations as List<CLLocation>
                     val lastLocation = locations.lastOrNull()
                     
-                    manager.stopUpdatingLocation() // Останавливаем поиск после получения
+                    manager.stopUpdatingLocation()
                     
                     if (cont.isActive) {
                         cont.resume(lastLocation?.let {
@@ -43,6 +66,7 @@ class LocationIosImpl(
             locationManager.delegate = delegate
             locationManager.startUpdatingLocation()
 
+            // Если корутина отменена — чистим ресурсы
             cont.invokeOnCancellation {
                 locationManager.stopUpdatingLocation()
                 locationManager.delegate = null
