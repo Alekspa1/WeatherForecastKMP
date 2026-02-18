@@ -1,0 +1,52 @@
+class LocationIosImpl(
+    private val locationInIp: LocationRepository
+) : LocationRepository, PermissionRepository {
+
+    private val locationManager = CLLocationManager()
+
+    override fun isPermissionGranted(permission: String): Boolean {
+        val status = locationManager.authorizationStatus
+        return status == kCLAuthorizationStatusAuthorizedWhenInUse || 
+               status == kCLAuthorizationStatusAuthorizedAlways
+    }
+
+    override fun isGpsEnabled(): Boolean {
+        return CLLocationManager.locationServicesEnabled()
+    }
+
+    override suspend fun getCurrentLocation(): Coord? {
+        // Если разрешений нет, сразу идем в поиск по IP
+        if (!isPermissionGranted("")) {
+            return locationInIp.getCurrentLocation()
+        }
+
+        return suspendCancellableCoroutine { cont ->
+            val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+                override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
+                    val locations = didUpdateLocations as List<CLLocation>
+                    val lastLocation = locations.lastOrNull()
+                    
+                    manager.stopUpdatingLocation() // Останавливаем поиск после получения
+                    
+                    if (cont.isActive) {
+                        cont.resume(lastLocation?.let {
+                            Coord(it.coordinate.latitude.toString(), it.coordinate.longitude.toString())
+                        })
+                    }
+                }
+
+                override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
+                    if (cont.isActive) cont.resume(null)
+                }
+            }
+
+            locationManager.delegate = delegate
+            locationManager.startUpdatingLocation()
+
+            cont.invokeOnCancellation {
+                locationManager.stopUpdatingLocation()
+                locationManager.delegate = null
+            }
+        }
+    }
+}
