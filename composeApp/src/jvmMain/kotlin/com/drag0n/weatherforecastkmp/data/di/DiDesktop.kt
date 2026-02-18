@@ -12,3 +12,9 @@ actual val moduleLocation = module {
     single<PermissionRepository> { LocationDesktopImpl(get(named("IP_LOCATION"))) }
 
 }
+
+//actual val moduleLocation = module {
+//    single { 
+  //      LocationDesktopImpl(get(named("IP_LOCATION"))) 
+ //   } binds arrayOf(LocationRepository::class, PermissionRepository::class)
+//}
