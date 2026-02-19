@@ -26,6 +26,7 @@ class LocationIosImpl(
 ) : LocationRepository, PermissionRepository {
 
     private val locationManager = CLLocationManager()
+    private var currentDelegate: CLLocationManagerDelegateProtocol? = null
 
     // 1. Метод специально для iOS (его нет в общем интерфейсе)
     fun requestIosPermission() {
@@ -87,14 +88,14 @@ class LocationIosImpl(
                     if (cont.isActive) cont.resume(null)
                 }
             }
-
+            this.currentDelegate = delegate
             locationManager.delegate = delegate
             locationManager.startUpdatingLocation()
 
             cont.invokeOnCancellation {
                 locationManager.stopUpdatingLocation()
                 locationManager.delegate = null
-                // Важно: здесь делегат уйдет из памяти, так как корутина завершена
+                this.currentDelegate = null
             }
         }
     }
