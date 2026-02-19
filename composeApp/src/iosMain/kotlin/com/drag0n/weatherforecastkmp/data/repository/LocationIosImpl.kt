@@ -1,3 +1,26 @@
+package com.drag0n.weatherforecastkmp.data.repository
+
+import com.drag0n.weatherforecastkmp.domain.model.Coord
+import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
+import com.drag0n.weatherforecastkmp.domain.repository.PermissionRepository
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
+import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.CoreLocation.CLLocation
+import platform.CoreLocation.CLLocationManager
+import platform.CoreLocation.CLLocationManagerDelegateProtocol
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
+import platform.CoreLocation.kCLAuthorizationStatusDenied
+import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
+import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.Foundation.NSError
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
+import platform.darwin.NSObject
+import kotlin.coroutines.resume
+
 class LocationIosImpl(
     private val locationInIp: LocationRepository
 ) : LocationRepository, PermissionRepository {
@@ -7,7 +30,7 @@ class LocationIosImpl(
     // 1. Метод специально для iOS (его нет в общем интерфейсе)
     fun requestIosPermission() {
         val status = locationManager.authorizationStatus
-        
+
         when (status) {
             kCLAuthorizationStatusNotDetermined -> {
                 // Первый запрос — показываем системное окно
@@ -28,14 +51,15 @@ class LocationIosImpl(
 
     override fun isPermissionGranted(permission: String): Boolean {
         val status = locationManager.authorizationStatus
-        return status == kCLAuthorizationStatusAuthorizedWhenInUse || 
-               status == kCLAuthorizationStatusAuthorizedAlways
+        return status == kCLAuthorizationStatusAuthorizedWhenInUse ||
+                status == kCLAuthorizationStatusAuthorizedAlways
     }
 
     override fun isGpsEnabled(): Boolean {
         return CLLocationManager.locationServicesEnabled()
     }
 
+    @OptIn(ExperimentalForeignApi::class)
     override suspend fun getCurrentLocation(): Coord? {
         // Если разрешений нет — сразу используем поиск по IP
         if (!isPermissionGranted("")) {
@@ -43,22 +67,23 @@ class LocationIosImpl(
         }
 
         return suspendCancellableCoroutine { cont ->
-            // Создаем делегат для получения ответа от GPS
             val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
                 override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
                     val locations = didUpdateLocations as List<CLLocation>
                     val lastLocation = locations.lastOrNull()
-                    
                     manager.stopUpdatingLocation()
-                    
+                    manager.delegate = null // Очищаем ссылку
+
                     if (cont.isActive) {
                         cont.resume(lastLocation?.let {
-                            Coord(it.coordinate.latitude.toString(), it.coordinate.longitude.toString())
+                            Coord(it.coordinate.useContents { latitude.toString() }, it.coordinate.useContents { longitude.toString() })
                         })
                     }
                 }
 
                 override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
+                    manager.stopUpdatingLocation()
+                    manager.delegate = null
                     if (cont.isActive) cont.resume(null)
                 }
             }
@@ -66,10 +91,10 @@ class LocationIosImpl(
             locationManager.delegate = delegate
             locationManager.startUpdatingLocation()
 
-            // Если корутина отменена — чистим ресурсы
             cont.invokeOnCancellation {
                 locationManager.stopUpdatingLocation()
                 locationManager.delegate = null
+                // Важно: здесь делегат уйдет из памяти, так как корутина завершена
             }
         }
     }

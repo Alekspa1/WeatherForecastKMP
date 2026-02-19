@@ -44,8 +44,9 @@ kotlin {
         }
         commonMain.dependencies {
 
+            implementation(libs.material.icons.extended)
             implementation(libs.koin.compose.viewmodel)
-
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.coil.compose)

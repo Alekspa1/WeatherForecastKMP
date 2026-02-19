@@ -4,20 +4,13 @@ import com.drag0n.weatherforecastkmp.data.repository.LocationAndroidImpl
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.PermissionRepository
 import org.koin.core.qualifier.named
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
+
+
 actual val moduleLocation = module {
-    single<LocationRepository> {
-        LocationAndroidImpl(get(),get(named("IP_LOCATION")))
-    }
-    single<PermissionRepository> {
-        LocationAndroidImpl(get(),get(named("IP_LOCATION")))
-    }
-
+    single {
+        LocationAndroidImpl(get(), get(named("IP_LOCATION")))
+    } binds arrayOf(LocationRepository::class, PermissionRepository::class)
 }
-
-//actual val moduleLocation = module {
-   // single { 
-       // LocationAndroidImpl(get(), get(named("IP_LOCATION"))) 
-   // } binds arrayOf(LocationRepository::class, PermissionRepository::class)
-//}

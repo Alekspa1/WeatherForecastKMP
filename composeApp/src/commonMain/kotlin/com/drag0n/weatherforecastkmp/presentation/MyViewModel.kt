@@ -14,6 +14,9 @@ import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MyViewModel(
@@ -26,7 +29,8 @@ class MyViewModel(
 
 
 
-
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     var showGpsDialog by mutableStateOf(false)
     var requestPermissionTrigger by mutableStateOf(false) // Триггер для запуска pLauncher
     var locationState by mutableStateOf<Coord?>(null)
@@ -36,20 +40,20 @@ class MyViewModel(
 
     fun getLocationFun() {
         viewModelScope.launch {
-            delay(1000)
+            _isLoading.value = true
            val result = getCoord()
             locationState = result
-            val weather = getWeather("${result?.lat},${result?.lon}")
-            println(weather.toString())
-
+            getWeather("${result?.lat},${result?.lon}")
             }
         }
 
     fun getWeather(city: String){
         viewModelScope.launch {
+            _isLoading.value = true
             getWeatherDay(city)
                 .onSuccess {result -> weatherFlow = result }
                 .onFailure {error ->  println(error.message.toString()) }
+            _isLoading.value = false
         }
     }
 
