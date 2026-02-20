@@ -72,11 +72,12 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                             showDialog = true  },
                         isLoading = viewModel.isLoading.collectAsState().value
                     )
-                } else {
-                    Text("Определяем местоположение...")
-                    Spacer(Modifier.height(16.dp))
-                    CircularProgressIndicator()
-                }
+               }
+//                else {
+//                    Text("Определяем местоположение...")
+//                    Spacer(Modifier.height(16.dp))
+//                    CircularProgressIndicator()
+//                }
                 if (showDialog) {
                     CitySearchDialog(
                         onDismiss = { showDialog = false },
