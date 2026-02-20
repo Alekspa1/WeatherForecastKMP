@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drag0n.weatherforecastkmp.domain.model.Coord
+import com.drag0n.weatherforecastkmp.domain.model.WeatherState
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 
 import com.drag0n.weatherforecastkmp.domain.useCases.GetAstronomyUseCase
@@ -33,17 +34,21 @@ class MyViewModel(
 
     var statePermissionGps by mutableStateOf(false)
     var statePermissionLocation by mutableStateOf(false)
-    var isChecking by mutableStateOf(true)
 
+    init {
+        statePermissionLocation = isPermissionFun("android.permission.ACCESS_FINE_LOCATION")
+        statePermissionGps = isGpsEnableFun()
+    }
 
 
     var locationState by mutableStateOf<Coord?>(null)
-    var weatherFlow by mutableStateOf<Weather?>(null)
+    var weatherFlow by mutableStateOf<WeatherState>(WeatherState.Loading)
 
 
     fun getLocationFun() {
         viewModelScope.launch {
             _isLoading.value = true
+            weatherFlow = WeatherState.Loading
             val result = getCoord()
             locationState = result
             getWeather("${result?.lat},${result?.lon}")
@@ -53,9 +58,27 @@ class MyViewModel(
     fun getWeather(city: String) {
         viewModelScope.launch {
             _isLoading.value = true
+            weatherFlow = WeatherState.Loading
             getWeatherDay(city)
-                .onSuccess { result -> weatherFlow = result }
-                .onFailure { error -> println(error.message.toString()) }
+                .onSuccess { result -> weatherFlow = WeatherState.Success(result) }
+                .onFailure { error ->
+                    val isNetwork = when (error) {
+                        is io.ktor.client.network.sockets.ConnectTimeoutException,
+                        is io.ktor.client.network.sockets.SocketTimeoutException,
+                        is io.ktor.client.plugins.HttpRequestTimeoutException -> true
+
+                        is io.ktor.client.plugins.ResponseException -> false
+
+                        else -> false
+                    }
+
+                    val msg = if (isNetwork) "Нет подключения к интернету" else "Ошибка сервера или данных"
+
+                    weatherFlow = WeatherState.Error(
+                        message = msg,
+                        isNetworkError = isNetwork
+                    )
+                }
             _isLoading.value = false
         }
     }
@@ -74,11 +97,6 @@ class MyViewModel(
         return isGpsEnable()
     }
 
-    fun refresh(permission: String) {
-        isPermissionFun(permission)
-        isGpsEnableFun()
-        isChecking = false // проверка завершена
-    }
 }
 
 

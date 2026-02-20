@@ -1,5 +1,7 @@
 package com.drag0n.weatherforecastkmp.presentation
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,12 +17,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.drag0n.weatherforecastkmp.domain.model.WeatherState
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -38,56 +44,59 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
 
     var showDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
+        //delay(600)
         viewModel.getLocationFun() // 👈 ВЫЗЫВАЕМ ЗДЕСЬ
     }
 
-    MaterialTheme {
-        Scaffold { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val weather = viewModel.weatherFlow
-                if (weather != null) {
-                    val code = weather.current.condition.code
-                    val cityName = weather.location.name
-                    val date = getCurrentFormattedDate()
-                    val temp = weather.current.temp_c.toString()
-                    val windSpeed = weather.current.wind_mph.toString()
-                    val humidity = weather.current.humidity.toString()
-                    val pressure = weather.current.precip_mm.toString()
+    MaterialTheme(
+        // Если хочешь, чтобы вся тема была темной
+        colorScheme = darkColorScheme(surface = Color(0xFF121212))
+    ) {
+        Scaffold(
+            // Обязательно задаем темный фон здесь, чтобы убрать белый экран
+            containerColor = Color(0xFF121212)
+        ) { innerPadding ->
 
-                    WeatherScreen(
-                        cityName = cityName,
-                        date = date,
-                        temp = temp,
-                        windSpeed = windSpeed,
-                        humidity = humidity,
-                        pressure = pressure,
-                        onRefreshClick = {viewModel.getLocationFun()},
-                        onSearchClick = {
-                            showDialog = true  },
-                        isLoading = viewModel.isLoading.collectAsState().value
-                    )
-               }
-//                else {
-//                    Text("Определяем местоположение...")
-//                    Spacer(Modifier.height(16.dp))
-//                    CircularProgressIndicator()
-//                }
-                if (showDialog) {
-                    CitySearchDialog(
-                        onDismiss = { showDialog = false },
-                        onConfirm = { city ->
-                            viewModel.getWeather(city)
-                            showDialog = false
-                        }
-                    )
+            val weather = viewModel.weatherFlow
+            val isLoading by viewModel.isLoading.collectAsState()
+
+            // Используем Crossfade для плавного перехода от загрузки к погоде
+            Crossfade(
+                targetState = weather,
+                animationSpec = tween(1000), // Плавная смена за 0.8 сек
+                modifier = Modifier.padding(innerPadding)
+            ) { currentWeather ->
+                println(currentWeather.toString())
+                when (currentWeather) {
+                    is WeatherState.Loading -> {
+                        LoadingScreen()
+                    }
+
+                    is WeatherState.Success -> {
+                        WeatherScreen(
+                            isLoading = isLoading,
+                            onSearchClick = {showDialog = true},
+                            onRefreshClick = {viewModel.getWeather(currentWeather.data.location.name)})
+                    }
+
+                    is WeatherState.Error -> {
+                        ErrorScreen(
+                            currentWeather.message,
+                            currentWeather.isNetworkError
+                        ) { viewModel.getLocationFun() }
+                    }
                 }
 
+            }
+
+            if (showDialog) {
+                CitySearchDialog(
+                    onDismiss = { showDialog = false },
+                    onConfirm = { city ->
+                        viewModel.getWeather(city)
+                        showDialog = false
+                    }
+                )
             }
         }
     }
@@ -116,16 +125,17 @@ fun getCurrentFormattedDate(): String {
 
     return "$day $monthName"
 }
-fun typewWeather(code: Int) : WeatherType{
+
+fun typewWeather(code: Int): WeatherType {
     return when (code) {
         //1009 -> insertBackground(R.drawable.img_pasm) // пасмурно
         1087, 1273, 1276, 1282 -> WeatherType.STORMY
         // гроза
         //1150, 1153, 1168, 1171 -> insertBackground(R.drawable.img_2_day) // морось
-        1063, 1072, 1180, 1183, 1186, 1189, 1192, 1195, 1198, 1201, 1240, 1243,1246,1249,1252
+        1063, 1072, 1180, 1183, 1186, 1189, 1192, 1195, 1198, 1201, 1240, 1243, 1246, 1249, 1252
             -> WeatherType.RAINY
         // дождь
-        1066, 1069, 1114, 1117, 1204, 1207, 1210, 1213, 1216, 1219, 1222, 1225, 1237, 1255, 1258,1261, 1264
+        1066, 1069, 1114, 1117, 1204, 1207, 1210, 1213, 1216, 1219, 1222, 1225, 1237, 1255, 1258, 1261, 1264
             -> WeatherType.SNOWY
         // снег
         1030, 1147, 1135 -> WeatherType.FOGGY // туман
