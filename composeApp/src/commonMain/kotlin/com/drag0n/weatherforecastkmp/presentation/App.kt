@@ -44,7 +44,6 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
 
     var showDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        //delay(600)
         viewModel.getLocationFun() // 👈 ВЫЗЫВАЕМ ЗДЕСЬ
     }
 
@@ -63,7 +62,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
             // Используем Crossfade для плавного перехода от загрузки к погоде
             Crossfade(
                 targetState = weather,
-                animationSpec = tween(1000), // Плавная смена за 0.8 сек
+                animationSpec = tween(600),
                 modifier = Modifier.padding(innerPadding)
             ) { currentWeather ->
                 println(currentWeather.toString())
@@ -73,17 +72,20 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                     }
 
                     is WeatherState.Success -> {
-                        WeatherScreen(
-                            isLoading = isLoading,
+                        MainWeatherPager(isLoading = isLoading,
                             onSearchClick = {showDialog = true},
                             onRefreshClick = {viewModel.getWeather(currentWeather.data.location.name)})
+
                     }
 
                     is WeatherState.Error -> {
                         ErrorScreen(
                             currentWeather.message,
                             currentWeather.isNetworkError
-                        ) { viewModel.getLocationFun() }
+                        ) {viewModel.locationState?.let {
+                            viewModel.getWeather("${it.lat},${it.lon}")
+                        } ?: viewModel.getLocationFun()
+                             }
                     }
                 }
 
