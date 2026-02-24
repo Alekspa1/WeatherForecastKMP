@@ -82,7 +82,7 @@ fun WeatherScreen(
     pressure: String = "750 мм",
     sunrise: String = "06:42",
     sunset: String = "18:15",
-    weatherType: WeatherType = WeatherType.STORMY,
+    weatherType: WeatherType = WeatherType.SUNNY,
     isLoading: Boolean = false, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {}

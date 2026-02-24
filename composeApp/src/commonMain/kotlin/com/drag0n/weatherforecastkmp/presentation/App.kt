@@ -6,18 +6,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +33,7 @@ import com.drag0n.weatherforecastkmp.domain.model.WeatherState
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -43,6 +50,9 @@ import kotlin.time.Clock
 fun App(viewModel: MyViewModel = koinViewModel()) {
 
     var showDialog by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         viewModel.getLocationFun() // 👈 ВЫЗЫВАЕМ ЗДЕСЬ
     }
@@ -51,54 +61,76 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
         // Если хочешь, чтобы вся тема была темной
         colorScheme = darkColorScheme(surface = Color(0xFF121212))
     ) {
-        Scaffold(
-            // Обязательно задаем темный фон здесь, чтобы убрать белый экран
-            containerColor = Color(0xFF121212)
-        ) { innerPadding ->
 
-            val weather = viewModel.weatherFlow
-            val isLoading by viewModel.isLoading.collectAsState()
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.5f)) {
+                    // Контент вашего меню (список городов, настройки и т.д.)
+                    Text("Меню управления", modifier = Modifier.padding(16.dp))
+                    NavigationDrawerItem(
+                        label = { Text("Настройки") },
+                        selected = false,
+                        onClick = {})
+                }
+            }
+        ) {
+            Scaffold(
+                // Обязательно задаем темный фон здесь, чтобы убрать белый экран
+                containerColor = Color(0xFF121212)
+            ) { innerPadding ->
 
-            // Используем Crossfade для плавного перехода от загрузки к погоде
-            Crossfade(
-                targetState = weather,
-                animationSpec = tween(600),
-                modifier = Modifier.padding(innerPadding)
-            ) { currentWeather ->
-                println(currentWeather.toString())
-                when (currentWeather) {
-                    is WeatherState.Loading -> {
-                        LoadingScreen()
+                val weather = viewModel.weatherFlow
+                val isLoading by viewModel.isLoading.collectAsState()
+
+                // Используем Crossfade для плавного перехода от загрузки к погоде
+                Crossfade(
+                    targetState = weather,
+                    animationSpec = tween(600),
+                    modifier = Modifier.padding(innerPadding)
+                ) { currentWeather ->
+                    println(currentWeather.toString())
+                    when (currentWeather) {
+                        is WeatherState.Loading -> {
+                            LoadingScreen()
+                        }
+
+                        is WeatherState.Success -> {
+                            MainWeatherPager(
+                                isLoading = isLoading,
+                                onSearchClick = { showDialog = true },
+                                onRefreshClick = { viewModel.getWeather(currentWeather.data.location.name) },
+                                openDrawerlick = { scope.launch { drawerState.open() } }
+                            )
+                        }
+
+                        is WeatherState.Error -> {
+                            ErrorScreen(
+                                currentWeather.message,
+                                currentWeather.isNetworkError
+                            ) {
+                                viewModel.locationState?.let {
+                                    viewModel.getWeather("${it.lat},${it.lon}")
+                                } ?: viewModel.getLocationFun()
+                            }
+                        }
                     }
 
-                    is WeatherState.Success -> {
-                        MainWeatherPager(isLoading = isLoading,
-                            onSearchClick = {showDialog = true},
-                            onRefreshClick = {viewModel.getWeather(currentWeather.data.location.name)})
-                    }
-                    is WeatherState.Error -> {
-                        ErrorScreen(
-                            currentWeather.message,
-                            currentWeather.isNetworkError
-                        ) {viewModel.locationState?.let {
-                            viewModel.getWeather("${it.lat},${it.lon}")
-                        } ?: viewModel.getLocationFun()
-                             }
-                    }
                 }
 
-            }
-
-            if (showDialog) {
-                CitySearchDialog(
-                    onDismiss = { showDialog = false },
-                    onConfirm = { city ->
-                        viewModel.getWeather(city)
-                        showDialog = false
-                    }
-                )
+                if (showDialog) {
+                    CitySearchDialog(
+                        onDismiss = { showDialog = false },
+                        onConfirm = { city ->
+                            viewModel.getWeather(city)
+                            showDialog = false
+                        }
+                    )
+                }
             }
         }
+
+
     }
 }
 
