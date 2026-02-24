@@ -75,9 +75,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                         MainWeatherPager(isLoading = isLoading,
                             onSearchClick = {showDialog = true},
                             onRefreshClick = {viewModel.getWeather(currentWeather.data.location.name)})
-
                     }
-
                     is WeatherState.Error -> {
                         ErrorScreen(
                             currentWeather.message,

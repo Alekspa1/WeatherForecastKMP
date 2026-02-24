@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,7 +42,7 @@ fun MainWeatherPager(
 
         // 1. Аналог TabLayout
 
-        TabRow(selectedTabIndex = pagerState.currentPage) {
+        PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
 
             titles.forEachIndexed { index, title ->
 
@@ -52,9 +52,9 @@ fun MainWeatherPager(
 
                     onClick = {
 
-                        // Плавный скролл при клике на вкладку
-
-                        scope.launch { pagerState.animateScrollToPage(index) }
+                        if (pagerState.currentPage != index) {
+                            scope.launch { pagerState.animateScrollToPage(index) }
+                        }
 
                     },
 
