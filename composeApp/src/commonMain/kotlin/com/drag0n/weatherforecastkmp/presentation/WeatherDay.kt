@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WbSunny
@@ -50,11 +52,14 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
@@ -64,6 +69,8 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.painterResource
+import weatherforecastkmp.composeapp.generated.resources.Res
 
 
 @Composable
@@ -75,19 +82,13 @@ fun WeatherScreen(
 ) {
 
 
-    // Определяем текущее время
-    val now = Clock.System.now()
-    val localDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
-    val currentHour = localDateTime.hour
 
-    // Определяем, день сейчас или вечер (с 6 утра до 18 вечера)
-    val isDayTime = remember(currentHour) {
-        currentHour >= 6 && currentHour < 18
-    }
+
+
 
     // Получаем цвета для фона в зависимости от погоды и времени суток
-    val weatherColors = remember(weather.weatherType, isDayTime) {
-        getWeatherColors(weather.weatherType, isDayTime)
+    val weatherColors = remember(weather.weatherType, weather.is_day) {
+        getWeatherColors(weather.weatherType, weather.is_day)
     }
 
     // Анимация для фоновых кругов
@@ -320,10 +321,6 @@ fun WeatherScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            ->
-
-
-            // Spacer(modifier = Modifier.height(30.dp))
 
             // Главная карточка погоды
             Card(
@@ -349,18 +346,23 @@ fun WeatherScreen(
 
                     Text(
                         text = weather.date,
-                        fontSize = 16.sp,
+                        fontSize = 24.sp,
                         color = weatherColors.textColorSecondary
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Иконка погоды в зависимости от типа
-                    Icon(
-                        getWeatherIcon(weather.weatherType),
-                        contentDescription = null,
-                        tint = weatherColors.iconTint,
-                        modifier = Modifier.size(80.dp)
+                    AsyncImage(
+                        model = weather.icon,
+                        contentDescription = weather.desc,
+                        modifier = Modifier
+                            .size(150.dp)
+                            .padding(8.dp),
+                        contentScale = ContentScale.Fit,
+                        // Можно добавить заглушки
+                        placeholder = rememberVectorPainter(Icons.Default.Download),
+                        error = rememberVectorPainter(Icons.Default.Error)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -373,7 +375,13 @@ fun WeatherScreen(
                     )
 
                     Text(
-                        text = getWeatherDescription(weather.weatherType),
+                        text = weather.feelslike,
+                        fontSize = 18.sp,
+                        color = weatherColors.textColorSecondary
+                    )
+
+                    Text(
+                        text = weather.desc,
                         fontSize = 18.sp,
                         color = weatherColors.textColorSecondary
                     )
@@ -394,7 +402,7 @@ fun WeatherScreen(
                         onClick = onSearchClick,
                         modifier = Modifier.height(40.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = weatherColors.buttonColor
+                            containerColor = weatherColors.cardColor
                         ),
                         shape = RoundedCornerShape(20)
                     ) {
@@ -419,8 +427,8 @@ fun WeatherScreen(
                         enabled = !isLoading,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isLoading)
-                                weatherColors.buttonColorSecondary.copy(alpha = 0.5f)
-                            else weatherColors.buttonColorSecondary
+                                weatherColors.cardColor.copy(alpha = 0.5f)
+                            else weatherColors.cardColor
                         ),
                         modifier = Modifier.height(40.dp),
                         shape = RoundedCornerShape(20)
@@ -430,20 +438,20 @@ fun WeatherScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
-                                color = weatherColors.buttonTextColorSecondary
+                                color = weatherColors.buttonTextColor
                             )
                         } else {
                             Icon(
                                 Icons.Filled.Refresh,
                                 contentDescription = null,
-                                tint = weatherColors.buttonTextColorSecondary,
+                                tint = weatherColors.buttonTextColor,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             if (isLoading) "Загрузка..." else "Обновить",
-                            color = weatherColors.buttonTextColorSecondary
+                            color = weatherColors.buttonTextColor
                         )
                     }
 
@@ -629,29 +637,7 @@ private fun DetailCard(
 
 
 
-// Функция для получения иконки погоды
-fun getWeatherIcon(weatherType: WeatherType): ImageVector {
-    return when (weatherType) {
-        WeatherType.SUNNY -> Icons.Filled.WbSunny
-        WeatherType.CLOUDY -> Icons.Filled.Cloud
-        WeatherType.RAINY -> Icons.Filled.Cloud // Можно заменить на свою иконку дождя
-        WeatherType.SNOWY -> Icons.Filled.Cloud // Можно заменить на свою иконку снега
-        WeatherType.STORMY -> Icons.Filled.Cloud // Можно заменить на свою иконку грозы
-        WeatherType.FOGGY -> Icons.Filled.Cloud // Можно заменить на свою иконку тумана
-    }
-}
 
-// Функция для получения описания погоды
-fun getWeatherDescription(weatherType: WeatherType): String {
-    return when (weatherType) {
-        WeatherType.SUNNY -> "Солнечно"
-        WeatherType.CLOUDY -> "Облачно"
-        WeatherType.RAINY -> "Дождливо"
-        WeatherType.SNOWY -> "Снежно"
-        WeatherType.STORMY -> "Гроза"
-        WeatherType.FOGGY -> "Туман"
-    }
-}
 
 // Функция для получения цветов в зависимости от погоды и времени суток
 fun getWeatherColors(weatherType: WeatherType, isDayTime: Boolean): WeatherColors {
@@ -673,7 +659,7 @@ val sunnyDayColors = WeatherColors(
     circle3 = Color(0xFFFFA07A),
     circle4 = Color(0xFF98FB98),
     circle5 = Color(0xFFFFB6C1),
-    textColor = Color(0xFF1A2F3F),
+    textColor = Color.White,
     textColorSecondary = Color(0xFF4A6A8A),
     iconTint = Color(0xFFFFD700),
     detailIconTint1 = Color(0xFF4A90E2),
@@ -864,3 +850,8 @@ val foggyNightColors = foggyDayColors.copy(
     textColorSecondary = Color.White.copy(alpha = 0.7f)
 )
 
+@Preview
+@Composable
+fun Pre(){
+    WeatherScreen(WeatherFormatDay("Москва","24 февраля", WeatherType.SUNNY,"Трололо","24°C","Ощущается как: 18°C","За окном: Солнечно","5 м/с","26%","750 мм/рт/ст","17:15","13:23",true))
+}

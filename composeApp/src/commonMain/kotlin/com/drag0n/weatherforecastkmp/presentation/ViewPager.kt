@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
@@ -33,11 +34,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.annotation.Poko
 import com.drag0n.weatherforecastkmp.domain.WeatherMapper
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
+import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
 import kotlinx.coroutines.launch
 import kotlinx.datetime.format.Padding
 
@@ -86,18 +90,43 @@ fun MainWeatherPager(
             PrimaryTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.weight(1f),
-                containerColor = Color.Transparent,
-                divider = {}
+                containerColor = Color.Transparent, // Прозрачный фон
+                divider = {}, // Убираем стандартную линию снизу
+                // Настройка полоски (индикатора)
+                indicator = {
+                    // В Material 3 (M3) позиции вкладок теперь берутся из context (this)
+                    val modifier = Modifier.tabIndicatorOffset(pagerState.currentPage)
+
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = modifier,
+                        width = 60.dp,        // Ширина полоски
+                        height = 3.dp,        // Толщина
+                        color = Color.White,  // БЕЛЫЙ ЦВЕТ
+                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                    )
+                }
             ) {
                 titles.forEachIndexed { index, title ->
+                    val selected = pagerState.currentPage == index
+
                     Tab(
-                        selected = pagerState.currentPage == index,
+                        selected = selected,
                         onClick = {
                             if (pagerState.currentPage != index) {
                                 scope.launch { pagerState.animateScrollToPage(index) }
                             }
                         },
-                        text = { Text(title) }
+                        // ЦВЕТА ТЕКСТА И ИКОНОК
+                        selectedContentColor = Color.White,    // Активный — БЕЛЫЙ
+                        unselectedContentColor = Color.Gray,   // Неактивный — СЕРЫЙ
+                        text = {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleSmall,
+                                // Дополнительно можно менять жирность
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
                     )
                 }
             }
@@ -140,4 +169,6 @@ fun MainWeatherPager(
 
 
 }
+
+
 

@@ -11,7 +11,7 @@ androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
 coilCompose = "3.3.0"
-coilNetworkKtor = "3.0.0-alpha08"
+coilNetworkKtor = "3.0.0-rc01"
 componentsResources = "1.6.11"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
@@ -35,7 +35,7 @@ playServicesLocation = "21.3.0"
 [libraries]
 agcp = { module = "com.huawei.agconnect:agcp", version.ref = "agcp" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
-coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coilNetworkKtor" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilNetworkKtor" }
 components-resources-v1611 = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinCore" }

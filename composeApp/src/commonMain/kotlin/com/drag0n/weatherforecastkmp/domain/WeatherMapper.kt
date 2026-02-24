@@ -16,14 +16,17 @@ object WeatherMapper {
         return WeatherFormatDay(
             city = weather.location.name,
             date = getCurrentFormattedDate(),
-            weatherType = typewWeather(weather.forecast.forecastday[0].hour[0].condition.code),
-            temp = "${weather.current.temp_c.roundToInt()} °C",
-            desc = "Описание",
-            wind = "${weather.current.wind_mph.roundToInt()} м/с",
+            weatherType = typewWeather(weather.current.condition.code),
+            icon = "https:${weather.current.condition.icon}",
+            temp = "${weather.current.temp_c.roundToInt()}°C",
+            feelslike = "Ощущается как: ${weather.current.feelslike_c.roundToInt()} °C",
+            desc = "За окном: ${weather.current.condition.text}",
+            wind = "${(weather.current.wind_kph / 3.6).roundToInt()} м/с",
             humidity = "${weather.current.humidity} %",
-            pressure = "${weather.current.precip_mm} мм/рт/ст",
-            sunrise = "Время восхода",
-            sunset = "Время заката"
+            pressure = "${(weather.current.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
+            sunrise = formatAstroTime(weather.forecast.forecastday[0].astro.sunrise) ,
+            sunset = formatAstroTime(weather.forecast.forecastday[0].astro.sunset),
+            is_day = weather.current.is_day == 1
 
 
         )
@@ -34,21 +37,36 @@ object WeatherMapper {
         val day = now.day
 
         val monthName = when (now.month) {
-            Month.JANUARY -> "янв"
-            Month.FEBRUARY -> "фев"
-            Month.MARCH -> "мар"
-            Month.APRIL -> "апр"
+            Month.JANUARY -> "января"
+            Month.FEBRUARY -> "феваля"
+            Month.MARCH -> "марта"
+            Month.APRIL -> "апреля"
             Month.MAY -> "мая"
-            Month.JUNE -> "июн"
-            Month.JULY -> "июл"
-            Month.AUGUST -> "авг"
-            Month.SEPTEMBER -> "сен"
-            Month.OCTOBER -> "окт"
-            Month.NOVEMBER -> "ноя"
-            Month.DECEMBER -> "дек"
+            Month.JUNE -> "июня"
+            Month.JULY -> "июля"
+            Month.AUGUST -> "августа"
+            Month.SEPTEMBER -> "сентября"
+            Month.OCTOBER -> "октября"
+            Month.NOVEMBER -> "ноября"
+            Month.DECEMBER -> "декабря"
         }
 
         return "$day $monthName"
+    }
+
+    private fun formatAstroTime(time: String): String {
+        val parts = time.split(" ", ":")
+        if (parts.size < 3) return time
+
+        var hour = parts[0].toInt()
+        val minute = parts[1]
+        val amPm = parts[2].uppercase()
+
+        if (amPm == "PM" && hour < 12) hour += 12
+        if (amPm == "AM" && hour == 12) hour = 0
+
+        val formattedHour = hour.toString().padStart(2, '0')
+        return "$formattedHour:$minute"
     }
 
     private fun typewWeather(code: Int): WeatherType {

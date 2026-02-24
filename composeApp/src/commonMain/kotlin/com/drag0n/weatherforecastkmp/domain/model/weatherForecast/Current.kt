@@ -7,7 +7,8 @@ data class Current(
     val condition: Condition,
     val feelslike_c: Double,
     val humidity: Int,
-    val precip_mm: Double,
+    val pressure_mb: Double,
     val temp_c: Double,
-    val wind_mph: Double
+    val wind_kph: Double,
+    val is_day: Int
 )
