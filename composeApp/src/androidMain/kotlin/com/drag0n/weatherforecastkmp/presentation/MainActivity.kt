@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentaton
+package com.drag0n.weatherforecastkmp.presentation
 
 import android.Manifest
 import android.content.Intent
@@ -10,12 +10,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
@@ -35,8 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.drag0n.weatherforecastkmp.presentation.App
-import com.drag0n.weatherforecastkmp.presentation.MyViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 class MainActivity : ComponentActivity() {

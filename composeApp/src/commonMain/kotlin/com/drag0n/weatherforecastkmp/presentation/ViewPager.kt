@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.annotation.Poko
+import com.drag0n.weatherforecastkmp.domain.WeatherMapper
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 import kotlinx.coroutines.launch
 import kotlinx.datetime.format.Padding
 
@@ -47,7 +49,8 @@ fun MainWeatherPager(
     isLoading: Boolean = false, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {},
-    openDrawerlick: () -> Unit = {}
+    openDrawerlick: () -> Unit = {},
+    weather: Weather
 
 ) {
 
@@ -114,7 +117,9 @@ fun MainWeatherPager(
                     WeatherScreen(
                         isLoading = isLoading,
                         onSearchClick = { onSearchClick() },
-                        onRefreshClick = { onRefreshClick() })
+                        onRefreshClick = { onRefreshClick() },
+                        weather =  WeatherMapper.WeatherData(weather)
+                    )
                 }      // Твой первый экран
 
                 1 -> {}

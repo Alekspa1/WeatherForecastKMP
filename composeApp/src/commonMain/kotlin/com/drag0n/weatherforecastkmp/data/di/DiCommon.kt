@@ -13,6 +13,7 @@ import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseC
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.MyViewModel
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -39,10 +40,16 @@ val appModule = module {
 
                 logger = object : Logger {
                     override fun log(message: String) {
-
+                    println(message)
                     }
                 }
                 level = LogLevel.BODY
+            }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 15000 // 15 секунд на весь запрос
+                connectTimeoutMillis = 15000 // 15 секунд на установку соединения
+                socketTimeoutMillis = 15000  // 15 секунд на обмен данными
             }
 
             install(ContentNegotiation) {
@@ -64,7 +71,6 @@ val appModule = module {
     factory<GetCurrentLocationUseCase> { GetCurrentLocationUseCase(get()) }
     factory<IsGpsEnabledUseCase> { IsGpsEnabledUseCase(get()) }
     factory<IsPermissionUseCase> { IsPermissionUseCase(get()) }
-    //factory<GetCoordInIpUseCase> {GetCoordInIpUseCase(get()) }
 
 
     viewModelOf(::MyViewModel)

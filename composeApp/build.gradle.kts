@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,6 +9,35 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
+    id("com.codingfeline.buildkonfig") version "0.17.1"
+}
+
+buildkonfig {
+    packageName = "com.drag0n.weatherforecastkmp"
+    objectName = "SharedConfig"
+
+    defaultConfigs {
+        val properties = Properties() // Теперь 'java.util' не нужен
+        val localFile = rootProject.file("local.properties")
+        if (localFile.exists()) {
+            localFile.inputStream().use { properties.load(it) }
+        }
+
+        val bannerId = properties.getProperty("YANDEX_BANNER_ID") ?: ""
+        val weatherKey = properties.getProperty("WEATHER_API_KEY") ?: ""
+
+        buildConfigField(
+            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
+            "YANDEX_BANNER_ID",
+            bannerId
+        )
+
+        buildConfigField(
+            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
+            "WEATHER_API_KEY",
+            weatherKey
+        )
+    }
 }
 
 kotlin {
@@ -37,7 +67,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             // Google Play Services для геолокации
             implementation(libs.play.services.location)
-
+            implementation(libs.mobileads)
             // Huawei Mobile Services для геолокации (если нужно поддерживать устройства Huawei)
             implementation(libs.location)
 

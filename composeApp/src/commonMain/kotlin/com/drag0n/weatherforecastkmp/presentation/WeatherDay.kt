@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WbSunny
@@ -44,26 +43,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.PI
@@ -74,15 +68,7 @@ import kotlin.time.Clock
 
 @Composable
 fun WeatherScreen(
-    cityName: String = "Москва",
-    date: String = "16 Октября",
-    temp: String = "+15°C",
-    windSpeed: String = "5 м/с",
-    humidity: String = "72%",
-    pressure: String = "750 мм",
-    sunrise: String = "06:42",
-    sunset: String = "18:15",
-    weatherType: WeatherType = WeatherType.SUNNY,
+    weather: WeatherFormatDay,
     isLoading: Boolean = false, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {}
@@ -100,8 +86,8 @@ fun WeatherScreen(
     }
 
     // Получаем цвета для фона в зависимости от погоды и времени суток
-    val weatherColors = remember(weatherType, isDayTime) {
-        getWeatherColors(weatherType, isDayTime)
+    val weatherColors = remember(weather.weatherType, isDayTime) {
+        getWeatherColors(weather.weatherType, isDayTime)
     }
 
     // Анимация для фоновых кругов
@@ -334,35 +320,75 @@ fun WeatherScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            ->
+
+
+            // Spacer(modifier = Modifier.height(30.dp))
+
+            // Главная карточка погоды
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = weatherColors.cardColor
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = weather.city,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = weatherColors.textColor
+                    )
+
+                    Text(
+                        text = weather.date,
+                        fontSize = 16.sp,
+                        color = weatherColors.textColorSecondary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Иконка погоды в зависимости от типа
+                    Icon(
+                        getWeatherIcon(weather.weatherType),
+                        contentDescription = null,
+                        tint = weatherColors.iconTint,
+                        modifier = Modifier.size(80.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = weather.temp,
+                        fontSize = 64.sp,
+                        fontWeight = FontWeight.Light,
+                        color = weatherColors.textColor
+                    )
+
+                    Text(
+                        text = getWeatherDescription(weather.weatherType),
+                        fontSize = 18.sp,
+                        color = weatherColors.textColorSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Верхняя панель с кнопками
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                //verticalAlignment = Alignment.CenterVertically
             ) {
-                // Город с иконкой
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(weatherColors.surfaceColor)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.LocationOn,
-                        contentDescription = null,
-                        tint = weatherColors.textColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        cityName,
-                        color = weatherColors.textColor,
-                        fontSize = 16.sp
-                    )
-                }
 
-                Row {
                     // Кнопка поиска
                     Button(
                         onClick = onSearchClick,
@@ -420,64 +446,7 @@ fun WeatherScreen(
                             color = weatherColors.buttonTextColorSecondary
                         )
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // Главная карточка погоды
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = weatherColors.cardColor
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = cityName,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = weatherColors.textColor
-                    )
-
-                    Text(
-                        text = date,
-                        fontSize = 16.sp,
-                        color = weatherColors.textColorSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Иконка погоды в зависимости от типа
-                    Icon(
-                        getWeatherIcon(weatherType),
-                        contentDescription = null,
-                        tint = weatherColors.iconTint,
-                        modifier = Modifier.size(80.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = temp,
-                        fontSize = 64.sp,
-                        fontWeight = FontWeight.Light,
-                        color = weatherColors.textColor
-                    )
-
-                    Text(
-                        text = getWeatherDescription(weatherType),
-                        fontSize = 18.sp,
-                        color = weatherColors.textColorSecondary
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -491,7 +460,7 @@ fun WeatherScreen(
                 DetailCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Outlined.Air,
-                    value = windSpeed,
+                    value = weather.wind,
                     label = "Ветер",
                     iconTint = weatherColors.detailIconTint1,
                     colors = weatherColors
@@ -501,7 +470,7 @@ fun WeatherScreen(
                 DetailCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Outlined.WaterDrop,
-                    value = humidity,
+                    value = weather.humidity,
                     label = "Влажность",
                     iconTint = weatherColors.detailIconTint2,
                     colors = weatherColors
@@ -511,7 +480,7 @@ fun WeatherScreen(
                 DetailCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Outlined.Compress,
-                    value = pressure,
+                    value = weather.pressure,
                     label = "Давление",
                     iconTint = weatherColors.detailIconTint3,
                     colors = weatherColors
@@ -551,7 +520,7 @@ fun WeatherScreen(
                                 color = weatherColors.textColorSecondary
                             )
                             Text(
-                                sunrise,
+                                weather.sunrise,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = weatherColors.textColor
@@ -583,69 +552,11 @@ fun WeatherScreen(
                                 color = weatherColors.textColorSecondary
                             )
                             Text(
-                                sunset,
+                                weather.sunset,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = weatherColors.textColor
                             )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Почасовой прогноз
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = weatherColors.cardColor
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Почасовой прогноз",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = weatherColors.textColor,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        repeat(5) { index ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "${10 + index * 3}:00",
-                                    fontSize = 14.sp,
-                                    color = weatherColors.textColorSecondary
-                                )
-
-                                Icon(
-                                    if (index % 2 == 0) Icons.Filled.WbSunny else Icons.Filled.Cloud,
-                                    contentDescription = null,
-                                    tint = if (index % 2 == 0) weatherColors.iconTint
-                                    else weatherColors.textColorSecondary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-
-                                Text(
-                                    text = "${18 + index}°",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = weatherColors.textColor
-                                )
-                            }
                         }
                     }
                 }
@@ -952,3 +863,4 @@ val foggyNightColors = foggyDayColors.copy(
     textColor = Color.White,
     textColorSecondary = Color.White.copy(alpha = 0.7f)
 )
+

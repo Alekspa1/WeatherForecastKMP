@@ -36,6 +36,7 @@ class MyViewModel(
     var statePermissionLocation by mutableStateOf(false)
 
     init {
+        println("Запуск")
         statePermissionLocation = isPermissionFun("android.permission.ACCESS_FINE_LOCATION")
         statePermissionGps = isGpsEnableFun()
     }
@@ -72,7 +73,7 @@ class MyViewModel(
                         else -> false
                     }
 
-                    val msg = if (isNetwork) "Нет подключения к интернету" else "Ошибка сервера или данных"
+                    val msg = if (isNetwork) "Проверьте ваше интернет соединение или включите VPN" else "Ошибка сервера или данных"
 
                     weatherFlow = WeatherState.Error(
                         message = msg,
