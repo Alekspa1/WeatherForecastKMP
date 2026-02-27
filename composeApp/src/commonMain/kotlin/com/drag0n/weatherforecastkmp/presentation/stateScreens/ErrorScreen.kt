@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentation
+package com.drag0n.weatherforecastkmp.presentation.stateScreens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

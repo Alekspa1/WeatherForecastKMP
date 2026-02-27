@@ -1,8 +1,15 @@
 package com.drag0n.weatherforecastkmp.domain
 
+
+import com.drag0n.weatherforecastkmp.domain.model.mapper.ForecastDateFormat
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Forecastday
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Hour
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatHour
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -12,7 +19,8 @@ import kotlin.time.Clock
 object WeatherMapper {
 
 
-    fun WeatherData(weather: Weather): WeatherFormatDay {
+
+    fun weatherData(weather: Weather): WeatherFormatDay {
         return WeatherFormatDay(
             city = weather.location.name,
             date = getCurrentFormattedDate(),
@@ -32,13 +40,36 @@ object WeatherMapper {
         )
     }
 
+
+    fun weatherDataList(forecast: List<Forecastday>): List<ForecastDateFormat> {
+
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
+
+        return forecast.mapIndexed { dayIndex, forecastday ->
+            val hours = if (dayIndex == 0) {
+                mapeperHour(forecastday.hour)
+                    .filter { hour -> comparisonOfTime(hour.time, now) }
+                    .filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
+            } else {
+                mapeperHour(forecastday.hour)
+                    .filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
+            }
+
+            ForecastDateFormat(hours)
+        }
+    }
+
+    private fun comparisonOfTime(time: String,currentTime: LocalTime) : Boolean{
+        val hourTime = LocalDateTime.parse(time.replace(" ", "T")).time
+        return hourTime > currentTime
+    }
     private fun getCurrentFormattedDate(): String {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val day = now.day
 
         val monthName = when (now.month) {
             Month.JANUARY -> "января"
-            Month.FEBRUARY -> "феваля"
+            Month.FEBRUARY -> "февраля"
             Month.MARCH -> "марта"
             Month.APRIL -> "апреля"
             Month.MAY -> "мая"
@@ -53,6 +84,8 @@ object WeatherMapper {
 
         return "$day $monthName"
     }
+
+
 
     private fun formatAstroTime(time: String): String {
         val parts = time.split(" ", ":")
@@ -86,4 +119,28 @@ object WeatherMapper {
             else -> WeatherType.CLOUDY
         }
     }
+
+//    private fun mapeperHour(hour: List<Hour>) : List<WeatherFormatHour> {
+//     return WeatherFormatHour(
+//         desc = "За окном: ${hour.condition.text}",
+//         feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
+//         humidity = "${hour.humidity} %",
+//         pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
+//         wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
+//         time = hour.time,
+//         temp = "${hour.temp_c.roundToInt()}°C",
+//     )
+//
+//    }
+    private fun mapeperHour(hourList: List<Hour>) = hourList.map { hour -> WeatherFormatHour(
+        desc = "За окном: ${hour.condition.text}",
+        feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
+        humidity = "${hour.humidity} %",
+        pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
+        wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
+        time = hour.time,
+        temp = "${hour.temp_c.roundToInt()}°C",
+    ) }
 }
+
+

@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentation
+package com.drag0n.weatherforecastkmp.presentation.others
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -34,6 +34,10 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.drag0n.weatherforecastkmp.SharedConfig
 import com.drag0n.weatherforecastkmp.domain.model.WeatherState
+import com.drag0n.weatherforecastkmp.presentation.YandexBannerAd
+import com.drag0n.weatherforecastkmp.presentation.screens.MainWeatherPager
+import com.drag0n.weatherforecastkmp.presentation.stateScreens.ErrorScreen
+import com.drag0n.weatherforecastkmp.presentation.stateScreens.LoadingScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -45,6 +49,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     var showDialog by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .components {
@@ -109,7 +114,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                                 isLoading = isLoading,
                                 onSearchClick = { showDialog = true },
                                 onRefreshClick = { viewModel.getWeather(currentWeather.data.location.name) },
-                                openDrawerlick = { scope.launch { drawerState.open() }},
+                                openDrawerlick = { scope.launch { drawerState.open() } },
                                 currentWeather.data
                             )
                         }
@@ -142,11 +147,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
 
 
     }
-    @Preview
-    @Composable
-    fun Preview(){
-        App()
-    }
+
 }
 
 

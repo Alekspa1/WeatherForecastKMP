@@ -6,12 +6,11 @@ import com.drag0n.weatherforecastkmp.data.repository.GetcoordInIpImpl
 import com.drag0n.weatherforecastkmp.data.repository.WeatherImp
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.WeatherRepository
-import com.drag0n.weatherforecastkmp.domain.useCases.GetAstronomyUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
-import com.drag0n.weatherforecastkmp.presentation.MyViewModel
+import com.drag0n.weatherforecastkmp.presentation.others.MyViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -40,7 +39,7 @@ val appModule = module {
 
                 logger = object : Logger {
                     override fun log(message: String) {
-                    println(message)
+                    println("Logger in DiCommon: ${message}")
                     }
                 }
                 level = LogLevel.BODY
@@ -67,7 +66,6 @@ val appModule = module {
 
 
     factory<GetWeatherUseCase> { GetWeatherUseCase(get()) }
-    factory<GetAstronomyUseCase> { GetAstronomyUseCase(get()) }
     factory<GetCurrentLocationUseCase> { GetCurrentLocationUseCase(get()) }
     factory<IsGpsEnabledUseCase> { IsGpsEnabledUseCase(get()) }
     factory<IsPermissionUseCase> { IsPermissionUseCase(get()) }

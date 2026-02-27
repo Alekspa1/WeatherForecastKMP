@@ -19,15 +19,10 @@ class WeatherImp(val ktor: HttpClient) : WeatherRepository {
         ktor.get("https://api.weatherapi.com/v1/forecast.json") {
             parameter("q", name)
             parameter("key", SharedConfig.WEATHER_API_KEY)
+            parameter("lang", "ru")
+            parameter("days", "3")
         }.body()
 
-    }
-
-    override suspend fun getWeatherAstronomy(name: String): Result<Astro> = runCatching{
-        ktor.get("https://api.weatherapi.com/v1/astronomy.json") {
-            parameter("q", name)
-            parameter("key", SharedConfig.WEATHER_API_KEY)
-        }.body()
     }
 
 }

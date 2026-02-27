@@ -19,7 +19,6 @@ class GetcoordInIpImpl(val ktor: HttpClient) : LocationRepository {
                 null
             }
         } catch (e: Exception) {
-            println(e.message.toString())
             null
         }
     }

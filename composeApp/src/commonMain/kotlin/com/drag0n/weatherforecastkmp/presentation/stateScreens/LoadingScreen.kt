@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentation
+package com.drag0n.weatherforecastkmp.presentation.stateScreens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ fun LoadingScreen(){
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Определяем местоположение...",
+            text = "Получаем данные о погоде...",
             color = Color.White // Текст теперь виден на темном фоне
         )
         Spacer(Modifier.height(16.dp))

@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentation
+package com.drag0n.weatherforecastkmp.presentation.screens
 
 
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
@@ -63,14 +62,9 @@ import coil3.compose.AsyncImage
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.time.Clock
-import org.jetbrains.compose.resources.painterResource
-import weatherforecastkmp.composeapp.generated.resources.Res
 
 
 @Composable
@@ -319,7 +313,8 @@ fun WeatherScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             // Главная карточка погоды
@@ -357,7 +352,7 @@ fun WeatherScreen(
                         model = weather.icon,
                         contentDescription = weather.desc,
                         modifier = Modifier
-                            .size(150.dp)
+                            .size(100.dp)
                             .padding(8.dp),
                         contentScale = ContentScale.Fit,
                         // Можно добавить заглушки
@@ -377,7 +372,8 @@ fun WeatherScreen(
                     Text(
                         text = weather.feelslike,
                         fontSize = 18.sp,
-                        color = weatherColors.textColorSecondary
+                        color = weatherColors.textColorSecondary,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Text(
@@ -388,7 +384,7 @@ fun WeatherScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            //Spacer(modifier = Modifier.height(16.dp))
 
             // Верхняя панель с кнопками
             Row(
@@ -419,7 +415,7 @@ fun WeatherScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    //Spacer(modifier = Modifier.width(8.dp))
 
                     // Кнопка обновления с анимацией загрузки
                     Button(
@@ -457,45 +453,42 @@ fun WeatherScreen(
 
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            //Spacer(modifier = Modifier.height(16.dp))
 
             // Карточки с деталями
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+
                 // Ветер
                 DetailCard(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     icon = Icons.Outlined.Air,
                     value = weather.wind,
-                    label = "Ветер",
+                    label = "Ветер:",
                     iconTint = weatherColors.detailIconTint1,
                     colors = weatherColors
                 )
 
                 // Влажность
                 DetailCard(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     icon = Icons.Outlined.WaterDrop,
                     value = weather.humidity,
-                    label = "Влажность",
+                    label = "Влажность:",
                     iconTint = weatherColors.detailIconTint2,
                     colors = weatherColors
                 )
 
                 // Давление
                 DetailCard(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     icon = Icons.Outlined.Compress,
                     value = weather.pressure,
-                    label = "Давление",
+                    label = "Давление:",
                     iconTint = weatherColors.detailIconTint3,
                     colors = weatherColors
                 )
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+
+           // Spacer(modifier = Modifier.height(16.dp))
 
             // Карточка восхода и заката
             Card(
@@ -600,11 +593,11 @@ private fun DetailCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 icon,
@@ -612,21 +605,22 @@ private fun DetailCard(
                 tint = iconTint,
                 modifier = Modifier.size(28.dp)
             )
+            Text(
+                text = label,
+                fontSize = 15.sp,
+                color = colors.textColorSecondary
+            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = value,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = colors.textColor
             )
 
-            Text(
-                text = label,
-                fontSize = 14.sp,
-                color = colors.textColorSecondary
-            )
+
         }
     }
 }
@@ -853,5 +847,5 @@ val foggyNightColors = foggyDayColors.copy(
 @Preview
 @Composable
 fun Pre(){
-    WeatherScreen(WeatherFormatDay("Москва","24 февраля", WeatherType.SUNNY,"Трололо","24°C","Ощущается как: 18°C","За окном: Солнечно","5 м/с","26%","750 мм/рт/ст","17:15","13:23",true))
+    WeatherScreen(WeatherFormatDay("Москва","24 февраля", WeatherType.SUNNY,"Трололо","24°C","Ощущается как: 18°C","За окном: Переменная облачность с осадками","5 м/с","26%","750 мм/рт/ст","17:15","13:23",true))
 }

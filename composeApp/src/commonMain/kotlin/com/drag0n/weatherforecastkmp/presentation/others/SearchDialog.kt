@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.presentation
+package com.drag0n.weatherforecastkmp.presentation.others
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
