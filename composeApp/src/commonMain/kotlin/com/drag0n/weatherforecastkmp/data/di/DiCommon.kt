@@ -12,11 +12,14 @@ import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseC
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.others.MyViewModel
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
@@ -35,6 +38,11 @@ val appModule = module {
     single<HttpClient> {
 
         HttpClient {
+            install(DefaultRequest) {
+
+                header(HttpHeaders.UserAgent, "MyKMPWeatherApp/1.0")
+                header(HttpHeaders.Accept, "application/json")
+            }
             install(Logging) {
 
                 logger = object : Logger {
@@ -46,9 +54,9 @@ val appModule = module {
             }
 
             install(HttpTimeout) {
-                requestTimeoutMillis = 15000 // 15 секунд на весь запрос
-                connectTimeoutMillis = 15000 // 15 секунд на установку соединения
-                socketTimeoutMillis = 15000  // 15 секунд на обмен данными
+                requestTimeoutMillis = 30_000
+                connectTimeoutMillis = 20_000
+                socketTimeoutMillis = 20_000
             }
 
             install(ContentNegotiation) {

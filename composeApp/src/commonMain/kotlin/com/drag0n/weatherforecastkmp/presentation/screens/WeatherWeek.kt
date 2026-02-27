@@ -229,7 +229,9 @@ fun WeatherList(forecastDateFormat: List<ForecastDateFormat>) {
             forecastDateFormat.forEachIndexed {index, format ->
 
                 item {
-                    Text(text = format.hours[index].time, color = Color.White)
+                    if (format.hours.isNotEmpty()) {
+                        Text(text = format.hours[index].time, color = Color.White)
+                    }
                 }
                 items(format.hours) { item ->
 

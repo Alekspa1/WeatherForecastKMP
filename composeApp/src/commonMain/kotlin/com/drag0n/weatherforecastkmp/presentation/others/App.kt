@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -49,6 +48,9 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     var showDialog by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val weather by viewModel.weatherFlow.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val location by viewModel.stateLocation.collectAsState(initial = "")
 
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
@@ -94,9 +96,6 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                 }
             ) { innerPadding ->
 
-                val weather = viewModel.weatherFlow
-                val isLoading by viewModel.isLoading.collectAsState()
-
                 // Используем Crossfade для плавного перехода от загрузки к погоде
                 Crossfade(
                     targetState = weather,
@@ -113,7 +112,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                             MainWeatherPager(
                                 isLoading = isLoading,
                                 onSearchClick = { showDialog = true },
-                                onRefreshClick = { viewModel.getWeather(currentWeather.data.location.name) },
+                                onRefreshClick = { viewModel.newLocation(currentWeather.data.location.name) },
                                 openDrawerlick = { scope.launch { drawerState.open() } },
                                 currentWeather.data
                             )
@@ -124,9 +123,8 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                                 currentWeather.message,
                                 currentWeather.isNetworkError
                             ) {
-                                viewModel.locationState?.let {
-                                    viewModel.getWeather("${it.lat},${it.lon}")
-                                } ?: viewModel.getLocationFun()
+                                if (location.isNotEmpty()) viewModel.newLocation(location)
+                                else viewModel.getLocationFun()
                             }
                         }
                     }
@@ -137,7 +135,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                     CitySearchDialog(
                         onDismiss = { showDialog = false },
                         onConfirm = { city ->
-                            viewModel.getWeather(city)
+                            viewModel.newLocation(city)
                             showDialog = false
                         }
                     )

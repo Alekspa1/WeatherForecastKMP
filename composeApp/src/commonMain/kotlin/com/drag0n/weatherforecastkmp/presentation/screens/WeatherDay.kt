@@ -847,5 +847,5 @@ val foggyNightColors = foggyDayColors.copy(
 @Preview
 @Composable
 fun Pre(){
-    WeatherScreen(WeatherFormatDay("Москва","24 февраля", WeatherType.SUNNY,"Трололо","24°C","Ощущается как: 18°C","За окном: Переменная облачность с осадками","5 м/с","26%","750 мм/рт/ст","17:15","13:23",true))
+    WeatherScreen(WeatherFormatDay("Москва","24 февраля", WeatherType.SUNNY,"Трололо","24°C","Ощущается как: 18°C","За окном: Переменная облачность с осадками","5 м/с","26%","750 мм/рт/ст","17:15","13:23",false))
 }

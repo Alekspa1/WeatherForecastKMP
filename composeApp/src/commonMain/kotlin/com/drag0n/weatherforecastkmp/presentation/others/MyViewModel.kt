@@ -15,9 +15,19 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MyViewModel(
@@ -29,9 +39,6 @@ class MyViewModel(
 
 
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     var statePermissionGps by mutableStateOf(false)
     var statePermissionLocation by mutableStateOf(false)
 
@@ -41,50 +48,67 @@ class MyViewModel(
     }
 
 
-    var locationState by mutableStateOf<Coord?>(null)
-    var weatherFlow by mutableStateOf<WeatherState>(WeatherState.Loading)
 
 
-    fun getLocationFun() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            weatherFlow = WeatherState.Loading
-            val result = getCoord()
-            locationState = result
-            getWeather("${result?.lat},${result?.lon}")
-        }
-    }
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    fun getWeather(city: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            weatherFlow = WeatherState.Loading
-            getWeatherDay(city)
-                .onSuccess { result -> weatherFlow = WeatherState.Success(result) }
+    val stateLocation = MutableSharedFlow<String>(
+        replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val weatherFlow = stateLocation.flatMapLatest { location ->
+        flow {
+            emit(WeatherState.Loading)
+            getWeatherDay(location).onSuccess { result ->
+                emit(WeatherState.Success(result))
+            }
                 .onFailure { error ->
                     val isNetwork = when (error) {
-                        is ConnectTimeoutException,
-                        is SocketTimeoutException,
-                        is HttpRequestTimeoutException -> true
+                        is ConnectTimeoutException, is SocketTimeoutException, is HttpRequestTimeoutException -> true
 
                         is ResponseException -> false
 
                         else -> false
                     }
 
-                    val msg = if (isNetwork) "Проверьте ваше интернет соединение или включите VPN" else "Ошибка сервера или данных"
+                    val msg =
+                        if (isNetwork) "Проверьте ваше интернет соединение или включите VPN" else "Ошибка сервера или данных"
 
-                    weatherFlow = WeatherState.Error(
-                        message = msg,
-                        isNetworkError = isNetwork
+                    emit(
+                        WeatherState.Error(
+                            message = msg, isNetworkError = isNetwork
+                        )
                     )
+
                 }
-            _isLoading.value = false
+        }
+            .onStart { _isLoading.value = true } // Запускаем лоадер перед началом потока
+            .onCompletion { _isLoading.value = false }
+            .catch {
+                emit(
+                    WeatherState.Error(
+                        message = "Произошла неизвестная ошибка", isNetworkError = false
+                    )
+                )
+            }
+    }
+        .stateIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5000), WeatherState.Loading
+        )
+
+    fun getLocationFun() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = getCoord()
+            newLocation("${result?.lat},${result?.lon}")
         }
     }
 
-
-
+    fun newLocation(value: String) = viewModelScope.launch {
+        stateLocation.emit(value)
+    }
 
 
     fun isPermissionFun(permission: String): Boolean {
