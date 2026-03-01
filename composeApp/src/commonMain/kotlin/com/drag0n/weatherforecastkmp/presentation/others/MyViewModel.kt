@@ -50,8 +50,8 @@ class MyViewModel(
 
 
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+//    private val _isLoading = MutableStateFlow(false)
+//    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val stateLocation = MutableSharedFlow<String>(
         replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -84,8 +84,8 @@ class MyViewModel(
 
                 }
         }
-            .onStart { _isLoading.value = true } // Запускаем лоадер перед началом потока
-            .onCompletion { _isLoading.value = false }
+//            .onStart { _isLoading.value = true } // Запускаем лоадер перед началом потока
+//            .onCompletion { _isLoading.value = false }
             .catch {
                 emit(
                     WeatherState.Error(
@@ -100,7 +100,7 @@ class MyViewModel(
 
     fun getLocationFun() {
         viewModelScope.launch {
-            _isLoading.value = true
+           // _isLoading.value = true
             val result = getCoord()
             newLocation("${result?.lat},${result?.lon}")
         }

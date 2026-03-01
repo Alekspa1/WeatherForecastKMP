@@ -69,8 +69,7 @@ import kotlin.math.sin
 
 @Composable
 fun WeatherScreen(
-    weather: WeatherFormatDay,
-    isLoading: Boolean = false, // Добавляем параметр
+    weather: WeatherFormatDay, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {}
 ) {
@@ -181,9 +180,7 @@ fun WeatherScreen(
 
     // Обработчик нажатия на кнопку обновления
     val handleRefreshClick = {
-        if (!isLoading) { // Используем переданное состояние
             onRefreshClick()
-        }
     }
 
     Box(
@@ -375,22 +372,22 @@ fun WeatherScreen(
                         color = weatherColors.textColorSecondary,
                         modifier = Modifier.fillMaxWidth()
                     )
-
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = weather.desc,
                         fontSize = 18.sp,
-                        color = weatherColors.textColorSecondary
+                        color = weatherColors.textColorSecondary,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
-            //Spacer(modifier = Modifier.height(16.dp))
+
 
             // Верхняя панель с кнопками
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                //verticalAlignment = Alignment.CenterVertically
             ) {
 
                     // Кнопка поиска
@@ -415,45 +412,35 @@ fun WeatherScreen(
                         )
                     }
 
-                    //Spacer(modifier = Modifier.width(8.dp))
+
 
                     // Кнопка обновления с анимацией загрузки
                     Button(
                         onClick = handleRefreshClick,
-                        enabled = !isLoading,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isLoading)
-                                weatherColors.cardColor.copy(alpha = 0.5f)
-                            else weatherColors.cardColor
+                            containerColor = weatherColors.cardColor
                         ),
                         modifier = Modifier.height(40.dp),
                         shape = RoundedCornerShape(20)
                     ) {
-                        if (isLoading) {
-                            // Показываем индикатор загрузки
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = weatherColors.buttonTextColor
-                            )
-                        } else {
+
                             Icon(
                                 Icons.Filled.Refresh,
                                 contentDescription = null,
                                 tint = weatherColors.buttonTextColor,
                                 modifier = Modifier.size(18.dp)
                             )
-                        }
+
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            if (isLoading) "Загрузка..." else "Обновить",
+                            "Обновить",
                             color = weatherColors.buttonTextColor
                         )
                     }
 
             }
 
-            //Spacer(modifier = Modifier.height(16.dp))
+
 
             // Карточки с деталями
 
@@ -564,15 +551,6 @@ fun WeatherScreen(
             }
         }
 
-        // Опционально: затемнение экрана во время загрузки
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
-                    .pointerInput(Unit) {} // Блокируем касания
-            )
-        }
     }
 }
 

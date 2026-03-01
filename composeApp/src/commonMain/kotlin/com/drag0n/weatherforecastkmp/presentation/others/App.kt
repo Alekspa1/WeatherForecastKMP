@@ -49,7 +49,6 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val weather by viewModel.weatherFlow.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     val location by viewModel.stateLocation.collectAsState(initial = "")
 
     setSingletonImageLoaderFactory { context ->
@@ -110,7 +109,6 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
 
                         is WeatherState.Success -> {
                             MainWeatherPager(
-                                isLoading = isLoading,
                                 onSearchClick = { showDialog = true },
                                 onRefreshClick = { viewModel.newLocation(currentWeather.data.location.name) },
                                 openDrawerlick = { scope.launch { drawerState.open() } },

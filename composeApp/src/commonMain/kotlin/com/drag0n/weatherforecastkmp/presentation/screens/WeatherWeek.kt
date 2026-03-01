@@ -34,12 +34,66 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.drag0n.weatherforecastkmp.domain.model.mapper.ForecastDateFormat
+import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatHour
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.Padding
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
+
 
 @Composable
+fun WeatherList(forecastDateFormat: List<ForecastDateFormat>) {
 
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF121212))
+    ) {
+        LazyColumn(
+
+            modifier = Modifier.fillMaxSize(),
+
+            // Тот самый отступ между элементами, о котором мы говорили
+
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+
+            // Отступы для всего списка (чтобы не прилипало к краям при скролле)
+
+            contentPadding = PaddingValues(8.dp)
+
+        ) {
+            forecastDateFormat.forEachIndexed {index, format ->
+
+                item {
+                    if (format.hours.isNotEmpty()) {
+                        Text(text = formatToDate(format.hours[index].time) , color = Color.White)
+                    }
+                }
+                items(format.hours) { item ->
+
+                    ItemWeather(item) // Вызываем твою Composable функцию
+
+                }
+            }
+            // Отрисовка элементов
+
+        }
+    }
+
+
+}
+
+
+@Composable
 fun ItemWeather(hour: WeatherFormatHour) {
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -99,7 +153,7 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                 ) {
 
-                    Text(hour.time, style = MaterialTheme.typography.titleSmall)
+                    Text(formatToTime(hour.time) , style = MaterialTheme.typography.titleSmall)
 
                     Text(
                         "❄️",
@@ -202,49 +256,42 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
 }
 
+private val russianMonths = MonthNames(
+    listOf("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
+)
 
-@Composable
+fun formatToDate(epochSeconds: String): String {
+    val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
+    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
 
-fun WeatherList(forecastDateFormat: List<ForecastDateFormat>) {
-
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF121212))
-    ) {
-        LazyColumn(
-
-            modifier = Modifier.fillMaxSize(),
-
-            // Тот самый отступ между элементами, о котором мы говорили
-
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-
-            // Отступы для всего списка (чтобы не прилипало к краям при скролле)
-
-            contentPadding = PaddingValues(8.dp)
-
-        ) {
-            forecastDateFormat.forEachIndexed {index, format ->
-
-                item {
-                    if (format.hours.isNotEmpty()) {
-                        Text(text = format.hours[index].time, color = Color.White)
-                    }
-                }
-                items(format.hours) { item ->
-
-                    ItemWeather(item) // Вызываем твою Composable функцию
-
-                }
-            }
-            // Отрисовка элементов
-
-        }
+    val format = LocalDateTime.Format {
+        dayOfMonth(Padding.NONE) // Убирает ведущий ноль (будет "1", а не "01")
+        char(' ')
+        monthName(russianMonths)
     }
 
+    return dateTime.format(format)
+}
 
+fun formatToTime(epochSeconds: String): String {
+    val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
+    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val format = LocalDateTime.Format {
+        hour()   // "14"
+        char(':')
+        minute() // "00"
+    }
+
+    return dateTime.format(format)
 }
 
 
+
+
+
+@Preview(showBackground = true)
+@Composable
+fun Main(){
+WeatherList(listOf(ForecastDateFormat(listOf(WeatherFormatHour(),WeatherFormatHour()))))
+}

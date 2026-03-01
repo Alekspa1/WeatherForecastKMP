@@ -12,7 +12,10 @@ import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseC
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.others.MyViewModel
 import io.ktor.client.HttpClient
+import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
@@ -38,11 +41,23 @@ val appModule = module {
     single<HttpClient> {
 
         HttpClient {
-            install(DefaultRequest) {
+            install(HttpRequestRetry) {
+                maxRetries = 3
 
-                header(HttpHeaders.UserAgent, "MyKMPWeatherApp/1.0")
-                header(HttpHeaders.Accept, "application/json")
+                exponentialDelay()
+
+                // Используем retryIf — он дает полный контроль
+                retryIf { request, response ->
+                    response.status.value in 500..599
+                }
+
+                // А здесь обрабатываем исключения
+                retryOnExceptionIf { request, cause ->
+                    // Возвращаем true, если это таймаут (любого вида)
+                    cause is SocketTimeoutException || cause.cause is SocketTimeoutException
+                }
             }
+
             install(Logging) {
 
                 logger = object : Logger {
@@ -51,12 +66,6 @@ val appModule = module {
                     }
                 }
                 level = LogLevel.BODY
-            }
-
-            install(HttpTimeout) {
-                requestTimeoutMillis = 30_000
-                connectTimeoutMillis = 20_000
-                socketTimeoutMillis = 20_000
             }
 
             install(ContentNegotiation) {

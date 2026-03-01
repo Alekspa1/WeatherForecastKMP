@@ -15,6 +15,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToInt
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 object WeatherMapper {
 
@@ -59,8 +60,14 @@ object WeatherMapper {
         }
     }
 
-    private fun comparisonOfTime(time: String,currentTime: LocalTime) : Boolean{
-        val hourTime = LocalDateTime.parse(time.replace(" ", "T")).time
+    private fun comparisonOfTime(timeEpoch: String, currentTime: LocalTime): Boolean {
+        // 1. Превращаем секунды в объект даты/времени
+        val instant = Instant.fromEpochSeconds(timeEpoch.toLong())
+
+        // 2. Получаем локальное время (LocalTime) для текущего часового пояса
+        val hourTime = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
+
+        // 3. Сравниваем (например, 15:00 > 11:30)
         return hourTime > currentTime
     }
     private fun getCurrentFormattedDate(): String {
@@ -120,25 +127,13 @@ object WeatherMapper {
         }
     }
 
-//    private fun mapeperHour(hour: List<Hour>) : List<WeatherFormatHour> {
-//     return WeatherFormatHour(
-//         desc = "За окном: ${hour.condition.text}",
-//         feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
-//         humidity = "${hour.humidity} %",
-//         pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
-//         wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
-//         time = hour.time,
-//         temp = "${hour.temp_c.roundToInt()}°C",
-//     )
-//
-//    }
     private fun mapeperHour(hourList: List<Hour>) = hourList.map { hour -> WeatherFormatHour(
-        desc = "За окном: ${hour.condition.text}",
+        desc = "${hour.condition.text}",
         feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
         humidity = "${hour.humidity} %",
         pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
         wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
-        time = hour.time,
+        time = hour.time_epoch,
         temp = "${hour.temp_c.roundToInt()}°C",
     ) }
 }

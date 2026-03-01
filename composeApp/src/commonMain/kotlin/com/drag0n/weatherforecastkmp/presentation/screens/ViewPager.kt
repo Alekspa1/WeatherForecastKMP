@@ -1,6 +1,7 @@
 package com.drag0n.weatherforecastkmp.presentation.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.drag0n.weatherforecastkmp.domain.WeatherMapper
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
@@ -38,7 +40,6 @@ import kotlinx.coroutines.launch
 @Composable
 
 fun MainWeatherPager(
-    isLoading: Boolean = false, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {},
     openDrawerlick: () -> Unit = {},
@@ -124,7 +125,9 @@ fun MainWeatherPager(
 
             state = pagerState,
 
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Gray)
 
         ) { pageIndex ->
 
@@ -132,7 +135,6 @@ fun MainWeatherPager(
 
                 0 -> {
                     WeatherScreen(
-                        isLoading = isLoading,
                         onSearchClick = { onSearchClick() },
                         onRefreshClick = { onRefreshClick() },
                         weather = WeatherMapper.weatherData(weather)
@@ -159,6 +161,8 @@ fun MainWeatherPager(
 
 
 }
+
+
 
 
 
