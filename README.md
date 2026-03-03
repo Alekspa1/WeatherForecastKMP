@@ -1,48 +1,35 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
-
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
-
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-### Build and Run Android Application
-
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
-
-### Build and Run Desktop (JVM) Application
-
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+Weather KMP — Прогноз погоды на Kotlin Multiplatform
+Современное кроссплатформенное приложение для отслеживания погоды, работающее на Android, iOS и Desktop (JVM). Проект построен на базе Compose Multiplatform с общим кодом для бизнес-логики, навигации и сетевого взаимодействия.
+🛠 Стек технологий
+Core: Kotlin Multiplatform (KMP)
+UI: Compose Multiplatform (CMP)
+Network: Ktor (клиент для API прогноза погоды)
+DI: Koin
+Concurrency: Coroutines & Flow
+Maps: WebView Multiplatform + Интеграция метеорологических карт Meteoblue
+🏗 Архитектура и принципы
+Проект строго следует принципам Clean Architecture и SOLID:
+Domain Layer: Содержит чистую бизнес-логику и модели данных, не зависящие от фреймворков.
+Data Layer: Реализация репозиториев, работа с API через Ktor и маппинг данных.
+Presentation Layer: Реализован на MVVM. Состояние экрана (State) управляется через StateFlow.
+Inversion of Control: Платформенные зависимости (локация, настройки WebView) внедряются через механизм expect/actual.
+🌟 Ключевые особенности реализации
+🗺 Продвинутая работа с WebView и картами
+Одной из самых сложных задач была интеграция интерактивной карты в сложную вложенность UI: ModalNavigationDrawer -> HorizontalPager -> WebView.
+Решение конфликтов жестов: Чтобы горизонтальный свайп по карте не вызывал перелистывание страниц пейджера или открытие бокового меню, реализована динамическая блокировка:
+userScrollEnabled = false для пейджера на странице карты.
+gesturesEnabled = false для Drawer.
+Native Interception (Android): На платформенном уровне через requestDisallowInterceptTouchEvent(true) реализован перехват касаний, что предотвращает "дерганье" интерфейса.
+📍 Кроссплатформенная геолокация
+Реализовано получение координат пользователя без сторонних библиотек-оберток:
+Android: Интеграция с FusedLocationProviderClient.
+iOS: Использование нативного CLLocationManager через AppleMain.
+Desktop: Реализация получения координат (через системные сервисы или IP).
+🖥 Поддержка Desktop (KCEF)
+Для работы карты на десктопной версии интегрирован KCEF (Chromium Embedded Framework):
+Реализована фоновая инициализация движка Chromium.
+Добавлен UI-индикатор процесса загрузки и распаковки бинарников (около 100 МБ) с отображением прогресса в процентах.
+📦 Установка и запуск
+Клонируйте репозиторий: git clone https://github.com
+Android/iOS: Откройте проект в Android Studio (с плагином KMP) или Fleet.
+Desktop: Запустите задачу ./gradlew :composeApp:run.
