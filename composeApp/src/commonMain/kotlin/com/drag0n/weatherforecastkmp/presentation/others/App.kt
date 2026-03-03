@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalDrawerSheet
@@ -37,6 +38,7 @@ import com.drag0n.weatherforecastkmp.SharedConfig
 import com.drag0n.weatherforecastkmp.domain.WeatherMapper
 import com.drag0n.weatherforecastkmp.domain.model.WeatherState
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
+import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
 import com.drag0n.weatherforecastkmp.presentation.YandexBannerAd
 import com.drag0n.weatherforecastkmp.presentation.screens.MainWeatherPager
 import com.drag0n.weatherforecastkmp.presentation.stateScreens.ErrorScreen
@@ -54,13 +56,14 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     val scope = rememberCoroutineScope()
     val weather by viewModel.weatherFlow.collectAsState()
     val location by viewModel.stateLocation.collectAsState(initial = "")
+    val titles = listOf("Сегодня", "3 дня", "Карта")
+    val pagerState = rememberPagerState(pageCount = { titles.size })
 
     val weatherColors = remember(weather) {
-        if (weather is WeatherState.Success){
+        if (weather is WeatherState.Success) {
             val weatherMapper = WeatherMapper.weatherData((weather as WeatherState.Success).weather)
             getWeatherColors(weatherMapper.weatherType, weatherMapper.is_day)
         } else WeatherColors.Default
-
     }
 
     setSingletonImageLoaderFactory { context ->
@@ -78,11 +81,12 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
         BoxBackgroundCircle(weatherColors)
         ModalNavigationDrawer(
                 drawerState = drawerState,
-        drawerContent = {
+            gesturesEnabled = pagerState.currentPage != 2,
+            drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
-                    .windowInsetsPadding(WindowInsets.statusBars)
+                    //.windowInsetsPadding(WindowInsets.statusBars)
             ) {
                 // Контент вашего меню (список городов, настройки и т.д.)
                 Text("Меню управления", modifier = Modifier.padding(16.dp))
@@ -128,7 +132,9 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                                 onRefreshClick = { viewModel.newLocation(currentWeather.weather.location.name) },
                                 openDrawerlick = { scope.launch { drawerState.open() } },
                                 currentWeather.weather,
-                                weatherColors
+                                weatherColors,
+                                pagerState,
+                                titles
                             )
                         }
 

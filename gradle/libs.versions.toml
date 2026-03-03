@@ -15,6 +15,7 @@ coilNetworkKtor = "3.0.0-rc01"
 componentsResources = "1.6.11"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
+composeWebviewMultiplatform = "2.0.3"
 gradle = "8.4.0"
 junit = "4.13.2"
 koinCompose = "4.0.0"
@@ -37,6 +38,7 @@ agcp = { module = "com.huawei.agconnect:agcp", version.ref = "agcp" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilNetworkKtor" }
 components-resources-v1611 = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
+compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinCore" }
 koin-compose-v400 = { module = "io.insert-koin:koin-compose", version.ref = "koinCompose" }

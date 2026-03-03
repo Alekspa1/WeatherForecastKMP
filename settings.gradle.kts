@@ -18,15 +18,17 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
+        google() // Уберите фильтры mavenContent, они могут мешать
+        mavenCentral()
+        maven("https://developer.huawei.com/repo/")
+
+        // ПРАВИЛЬНЫЙ АДРЕС JOGAMP:
+        maven("https://www.jogamp.org") {
+            metadataSources {
+                mavenPom()
+                artifact()
             }
         }
-        mavenCentral()
-        maven ( "https://developer.huawei.com/repo/" )
     }
 }
 

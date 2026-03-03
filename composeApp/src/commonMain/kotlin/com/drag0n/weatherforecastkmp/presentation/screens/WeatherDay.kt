@@ -80,15 +80,13 @@ fun WeatherScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Color.Transparent
-            )
+            .padding(8.dp)
     ) {
         // Контент поверх фона
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+               // .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

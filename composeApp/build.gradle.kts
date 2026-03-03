@@ -73,7 +73,7 @@ kotlin {
 
         }
         commonMain.dependencies {
-
+            implementation(libs.compose.webview.multiplatform)
             implementation(libs.material.icons.extended)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.datetime)
@@ -117,6 +117,16 @@ kotlin {
         }
 
 
+    }
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jogamp.gluegen") {
+                useTarget("org.jogamp.gluegen:gluegen-rt:2.3.2")
+            }
+            if (requested.group == "org.jogamp.jogl") {
+                useTarget("org.jogamp.jogl:jogl-all:2.3.2")
+            }
+        }
     }
 }
 

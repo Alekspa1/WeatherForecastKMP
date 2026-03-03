@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontVariation.width
 import androidx.compose.ui.unit.dp
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
@@ -39,7 +41,6 @@ fun BoxBackgroundCircle(weatherColors: WeatherColors){
 
     val bgStart by animateColorAsState(weatherColors.gradientStart, tween(1000))
     val bgEnd by animateColorAsState(weatherColors.gradientEnd, tween(1000))
-
     // Круг 1 - движется вверх-вниз
     val offsetY1 by infiniteTransition.animateFloat(
         initialValue = -80f,
@@ -185,6 +186,8 @@ fun BoxBackgroundCircle(weatherColors: WeatherColors){
     }
 }
 
+
+
 fun getWeatherColors(weatherType: WeatherType, isDayTime: Boolean): WeatherColors {
     return when (weatherType) {
         WeatherType.SUNNY -> if (isDayTime) sunnyDayColors else sunnyNightColors
@@ -199,15 +202,15 @@ fun getWeatherColors(weatherType: WeatherType, isDayTime: Boolean): WeatherColor
 }
 
 val sunnyDayColors = WeatherColors(
-    gradientStart = Color(0xFF4A90E2),
-    gradientEnd = Color(0xFF87CEEB),
+    gradientStart = Color(0xFF0075FF),
+    gradientEnd = Color(0xFFFFFFFF),
     circle1 = Color(0xFFFFD700),
     circle2 = Color(0xFF87CEEB),
     circle3 = Color(0xFFFFA07A),
     circle4 = Color(0xFF98FB98),
     circle5 = Color(0xFFFFB6C1),
     textColor = Color.White,
-    textColorSecondary = Color(0xFF4A6A8A),
+    textColorSecondary = Color.White,
     iconTint = Color(0xFFFFD700),
     detailIconTint1 = Color(0xFF4A90E2),
     detailIconTint2 = Color(0xFF20B2AA),
@@ -231,8 +234,8 @@ val cloudyDayColors = WeatherColors(
     circle3 = Color(0xFFC0C0C0),
     circle4 = Color(0xFFA9A9A9),
     circle5 = Color(0xFFD3D3D3),
-    textColor = Color(0xFF2F4F4F),
-    textColorSecondary = Color(0xFF708090),
+    textColor = Color.White,
+    textColorSecondary = Color.White,
     iconTint = Color(0xFFA9A9A9),
     detailIconTint1 = Color(0xFF4682B4),
     detailIconTint2 = Color(0xFF5F9EA0),
@@ -257,7 +260,7 @@ val rainyDayColors = WeatherColors(
     circle4 = Color(0xFF7B68EE),
     circle5 = Color(0xFF4169E1),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     iconTint = Color(0xFF87CEEB),
     detailIconTint1 = Color(0xFF87CEEB),
     detailIconTint2 = Color(0xFF20B2AA),
@@ -281,8 +284,8 @@ val snowyDayColors = WeatherColors(
     circle3 = Color(0xFFD0E0F0),
     circle4 = Color(0xFFB8D0E8),
     circle5 = Color(0xFFA0C0E0),
-    textColor = Color(0xFF1A2F3F),
-    textColorSecondary = Color(0xFF4A6A8A),
+    textColor = Color.White,
+    textColorSecondary = Color.White,
     iconTint = Color.White,
     detailIconTint1 = Color(0xFF4682B4),
     detailIconTint2 = Color(0xFF5F9EA0),
@@ -307,7 +310,7 @@ val stormyDayColors = WeatherColors(
     circle4 = Color(0xFF2C3E50),
     circle5 = Color(0xFF34495E),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     iconTint = Color(0xFFF0E68C),
     detailIconTint1 = Color(0xFF87CEEB),
     detailIconTint2 = Color(0xFF20B2AA),
@@ -331,8 +334,8 @@ val foggyDayColors = WeatherColors(
     circle3 = Color(0xFFE0E0E0),
     circle4 = Color(0xFFF0F0F0),
     circle5 = Color(0xFFF8F8F8),
-    textColor = Color(0xFF2F4F4F),
-    textColorSecondary = Color(0xFF708090),
+    textColor = Color.White,
+    textColorSecondary = Color.White,
     iconTint = Color(0xFFA9A9A9),
     detailIconTint1 = Color(0xFF4682B4),
     detailIconTint2 = Color(0xFF5F9EA0),
@@ -353,7 +356,7 @@ val sunnyNightColors = sunnyDayColors.copy(
     gradientStart = Color(0xFF0A1929),
     gradientEnd = Color(0xFF1A3A5F),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     buttonTextColorSecondary = Color.White
 )
 
@@ -361,7 +364,7 @@ val cloudyNightColors = cloudyDayColors.copy(
     gradientStart = Color(0xFF2C3E50),
     gradientEnd = Color(0xFF1A2530),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     buttonTextColor = Color.White,
     buttonTextColorSecondary = Color.White
 )
@@ -370,14 +373,14 @@ val rainyNightColors = rainyDayColors.copy(
     gradientStart = Color(0xFF0F2027),
     gradientEnd = Color(0xFF203A43),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f)
+    textColorSecondary = Color.White
 )
 
 val snowyNightColors = snowyDayColors.copy(
     gradientStart = Color(0xFF2C3E50),
     gradientEnd = Color(0xFF3498DB),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     iconTint = Color.White,
     sunIconTint = Color(0xFFF0E68C),
     sunsetIconTint = Color(0xFFDAA520)
@@ -387,14 +390,14 @@ val stormyNightColors = stormyDayColors.copy(
     gradientStart = Color(0xFF0B0C10),
     gradientEnd = Color(0xFF1A1F2E),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f)
+    textColorSecondary = Color.White
 )
 
 val foggyNightColors = foggyDayColors.copy(
     gradientStart = Color(0xFF353F4F),
     gradientEnd = Color(0xFF4A5568),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f)
+    textColorSecondary = Color.White
 )
 val overcastDayColors = WeatherColors(
     gradientStart = Color(0xFF949FB0),
@@ -404,8 +407,8 @@ val overcastDayColors = WeatherColors(
     circle3 = Color(0xFFC4CDD8),
     circle4 = Color(0xFFD2D9E2),
     circle5 = Color(0xFFDEE4EB),
-    textColor = Color(0xFF37474F),
-    textColorSecondary = Color(0xFF546E7A),
+    textColor = Color.White,
+    textColorSecondary = Color.White,
     iconTint = Color(0xFF78909C),
     detailIconTint1 = Color(0xFF607D8B),
     detailIconTint2 = Color(0xFF90A4AE),
@@ -425,7 +428,7 @@ val overcastNightColors = overcastDayColors.copy(
     gradientStart = Color(0xFF1E272E),
     gradientEnd = Color(0xFF2F3640),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     buttonTextColorSecondary = Color.White
 )
 val drizzleDayColors = WeatherColors(
@@ -436,8 +439,8 @@ val drizzleDayColors = WeatherColors(
     circle3 = Color(0xFFB9CAD6),
     circle4 = Color(0xFFCAD8E1),
     circle5 = Color(0xFFD6E1E9),
-    textColor = Color(0xFF2C3E50),
-    textColorSecondary = Color(0xFF5D6D7E),
+    textColor = Color.White,
+    textColorSecondary = Color.White,
     iconTint = Color(0xFF5D6D7E),
     detailIconTint1 = Color(0xFF5499C7),
     detailIconTint2 = Color(0xFF7FB3D5),
@@ -457,6 +460,6 @@ val drizzleNightColors = drizzleDayColors.copy(
     gradientStart = Color(0xFF192A56),
     gradientEnd = Color(0xFF273C75),
     textColor = Color.White,
-    textColorSecondary = Color.White.copy(alpha = 0.7f),
+    textColorSecondary = Color.White,
     buttonTextColorSecondary = Color.White
 )
