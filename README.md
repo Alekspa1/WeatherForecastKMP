@@ -1,35 +1,38 @@
-Weather KMP — Прогноз погоды на Kotlin Multiplatform
-Современное кроссплатформенное приложение для отслеживания погоды, работающее на Android, iOS и Desktop (JVM). Проект построен на базе Compose Multiplatform с общим кодом для бизнес-логики, навигации и сетевого взаимодействия.
-🛠 Стек технологий
-Core: Kotlin Multiplatform (KMP)
-UI: Compose Multiplatform (CMP)
-Network: Ktor (клиент для API прогноза погоды)
-DI: Koin
-Concurrency: Coroutines & Flow
-Maps: WebView Multiplatform + Интеграция метеорологических карт Meteoblue
-🏗 Архитектура и принципы
-Проект строго следует принципам Clean Architecture и SOLID:
-Domain Layer: Содержит чистую бизнес-логику и модели данных, не зависящие от фреймворков.
-Data Layer: Реализация репозиториев, работа с API через Ktor и маппинг данных.
-Presentation Layer: Реализован на MVVM. Состояние экрана (State) управляется через StateFlow.
-Inversion of Control: Платформенные зависимости (локация, настройки WebView) внедряются через механизм expect/actual.
-🌟 Ключевые особенности реализации
-🗺 Продвинутая работа с WebView и картами
-Одной из самых сложных задач была интеграция интерактивной карты в сложную вложенность UI: ModalNavigationDrawer -> HorizontalPager -> WebView.
-Решение конфликтов жестов: Чтобы горизонтальный свайп по карте не вызывал перелистывание страниц пейджера или открытие бокового меню, реализована динамическая блокировка:
-userScrollEnabled = false для пейджера на странице карты.
-gesturesEnabled = false для Drawer.
-Native Interception (Android): На платформенном уровне через requestDisallowInterceptTouchEvent(true) реализован перехват касаний, что предотвращает "дерганье" интерфейса.
-📍 Кроссплатформенная геолокация
+# Weather KMP — Прогноз погоды на Kotlin Multiplatform
+
+Современное кроссплатформенное приложение для отслеживания погоды, работающее на **Android, iOS и Desktop (JVM)**. Проект построен на базе **Compose Multiplatform** с общим кодом для бизнес-логики, навигации и сетевого взаимодействия.
+
+## 🛠 Стек технологий
+*   **Core**: Kotlin Multiplatform (KMP)
+*   **UI**: Compose Multiplatform (CMP)
+*   **Network**: Ktor (клиент для API прогноза погоды)
+*   **DI**: Koin
+*   **Concurrency**: Coroutines & Flow
+*   **Maps**: WebView Multiplatform + Интеграция метеорологических карт Meteoblue
+
+## 🏗 Архитектура и принципы
+Проект строго следует принципам **Clean Architecture** и **SOLID**:
+*   **Domain Layer**: Содержит чистую бизнес-логику и модели данных, не зависящие от фреймворков.
+*   **Data Layer**: Реализация репозиториев, работа с API через Ktor и маппинг данных.
+*   **Presentation Layer**: Реализован на MVVM. Состояние экрана (State) управляется через StateFlow.
+*   **Inversion of Control**: Платформенные зависимости (локация, настройки WebView) внедряются через механизм `expect/actual`.
+
+## 🌟 Ключевые особенности реализации
+
+### 🗺 Продвинутая работа с WebView и картами
+Одной из самых сложных задач была интеграция интерактивной карты в сложную вложенность UI: `ModalNavigationDrawer` -> `HorizontalPager` -> `WebView`.
+
+**Решение конфликтов жестов:**
+*   Чтобы горизонтальный свайп по карте не вызывал перелистывание страниц пейджера или открытие бокового меню, реализована динамическая блокировка: `userScrollEnabled = false` для пейджера на странице карты и `gesturesEnabled = false` для Drawer.
+*   **Native Interception (Android):** На платформенном уровне через `requestDisallowInterceptTouchEvent(true)` реализован перехват касаний, что предотвращает "дерганье" интерфейса.
+
+### 📍 Кроссплатформенная геолокация
 Реализовано получение координат пользователя без сторонних библиотек-оберток:
-Android: Интеграция с FusedLocationProviderClient.
-iOS: Использование нативного CLLocationManager через AppleMain.
-Desktop: Реализация получения координат (через системные сервисы или IP).
-🖥 Поддержка Desktop (KCEF)
-Для работы карты на десктопной версии интегрирован KCEF (Chromium Embedded Framework):
-Реализована фоновая инициализация движка Chromium.
-Добавлен UI-индикатор процесса загрузки и распаковки бинарников (около 100 МБ) с отображением прогресса в процентах.
-📦 Установка и запуск
-Клонируйте репозиторий: git clone https://github.com
-Android/iOS: Откройте проект в Android Studio (с плагином KMP) или Fleet.
-Desktop: Запустите задачу ./gradlew :composeApp:run.
+*   **Android:** Интеграция с `FusedLocationProviderClient`.
+*   **iOS:** Использование нативного `CLLocationManager` через AppleMain.
+*   **Desktop:** Реализация получения координат (через системные сервисы или IP).
+
+### 🖥 Поддержка Desktop (KCEF)
+Для работы карты на десктопной версии интегрирован **KCEF** (Chromium Embedded Framework):
+*   Реализована фоновая инициализация движка Chromium.
+*   Добавлен UI-индикатор процесса загрузки и распаковки бинарников (около 100 МБ) с отображением прогресса в процентах.
