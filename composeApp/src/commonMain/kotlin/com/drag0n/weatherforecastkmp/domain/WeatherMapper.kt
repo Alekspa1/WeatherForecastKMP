@@ -12,13 +12,16 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.Padding
+import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Instant
 
 object WeatherMapper {
-
 
 
     fun weatherData(weather: Weather): WeatherFormatDay {
@@ -33,7 +36,7 @@ object WeatherMapper {
             wind = "${(weather.current.wind_kph / 3.6).roundToInt()} м/с",
             humidity = "${weather.current.humidity} %",
             pressure = "${(weather.current.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
-            sunrise = formatAstroTime(weather.forecast.forecastday[0].astro.sunrise) ,
+            sunrise = formatAstroTime(weather.forecast.forecastday[0].astro.sunrise),
             sunset = formatAstroTime(weather.forecast.forecastday[0].astro.sunset),
             is_day = weather.current.is_day == 1
 
@@ -47,16 +50,19 @@ object WeatherMapper {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
 
         return forecast.mapIndexed { dayIndex, forecastday ->
-            val hours = if (dayIndex == 0) {
-                mapeperHour(forecastday.hour)
-                    .filter { hour -> comparisonOfTime(hour.time, now) }
+            val hours = (if (dayIndex == 0) {
+                forecastday.hour
+                    .filter { hour -> comparisonOfTime(hour.time_epoch, now) }
                     .filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
             } else {
-                mapeperHour(forecastday.hour)
-                    .filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
-            }
+                forecastday.hour.filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
+            })
 
-            ForecastDateFormat(hours)
+
+            ForecastDateFormat(
+                formatToDate(forecastday.hour[dayIndex].time_epoch),
+                mapeperHour(hours)
+            )
         }
     }
 
@@ -70,6 +76,7 @@ object WeatherMapper {
         // 3. Сравниваем (например, 15:00 > 11:30)
         return hourTime > currentTime
     }
+
     private fun getCurrentFormattedDate(): String {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val day = now.day
@@ -91,7 +98,6 @@ object WeatherMapper {
 
         return "$day $monthName"
     }
-
 
 
     private fun formatAstroTime(time: String): String {
@@ -127,15 +133,48 @@ object WeatherMapper {
         }
     }
 
-    private fun mapeperHour(hourList: List<Hour>) = hourList.map { hour -> WeatherFormatHour(
-        desc = "${hour.condition.text}",
-        feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
-        humidity = "${hour.humidity} %",
-        pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
-        wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
-        time = hour.time_epoch,
-        temp = "${hour.temp_c.roundToInt()}°C",
-    ) }
+    private fun mapeperHour(hourList: List<Hour>) = hourList.map { hour ->
+        WeatherFormatHour(
+            desc = hour.condition.text,
+            feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
+            humidity = "${hour.humidity} %",
+            pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
+            wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
+            time = formatToTime(hour.time_epoch),
+            temp = "${hour.temp_c.roundToInt()}°C",
+        )
+    }
+
+    private val russianMonths = MonthNames(
+        listOf("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
+    )
+
+    fun formatToDate(epochSeconds: String): String {
+        val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
+        val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+        val format = LocalDateTime.Format {
+            this@Format.day(padding = Padding.NONE)
+            // Убирает ведущий ноль (будет "1", а не "01")
+            char(' ')
+            monthName(russianMonths)
+        }
+
+        return dateTime.format(format)
+    }
+
+    fun formatToTime(epochSeconds: String): String {
+        val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
+        val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+        val format = LocalDateTime.Format {
+            hour()   // "14"
+            char(':')
+            minute() // "00"
+        }
+
+        return dateTime.format(format)
+    }
 }
 
 

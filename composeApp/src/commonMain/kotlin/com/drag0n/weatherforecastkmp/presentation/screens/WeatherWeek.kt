@@ -75,7 +75,7 @@ fun WeatherList(forecastDateFormat: List<ForecastDateFormat>) {
 
                 item {
                     if (format.hours.isNotEmpty()) {
-                        Text(text = formatToDate(format.hours[index].time) , color = Color.White)
+                        Text(text = forecastDateFormat[index].date , color = Color.White)
                     }
                 }
                 items(format.hours) { item ->
@@ -153,7 +153,7 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                 ) {
 
-                    Text(formatToTime(hour.time) , style = MaterialTheme.typography.titleSmall)
+                    Text(hour.time , style = MaterialTheme.typography.titleSmall)
 
                     Text(
                         "❄️",
@@ -256,35 +256,7 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
 }
 
-private val russianMonths = MonthNames(
-    listOf("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
-)
 
-fun formatToDate(epochSeconds: String): String {
-    val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
-    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-    val format = LocalDateTime.Format {
-        dayOfMonth(Padding.NONE) // Убирает ведущий ноль (будет "1", а не "01")
-        char(' ')
-        monthName(russianMonths)
-    }
-
-    return dateTime.format(format)
-}
-
-fun formatToTime(epochSeconds: String): String {
-    val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
-    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-
-    val format = LocalDateTime.Format {
-        hour()   // "14"
-        char(':')
-        minute() // "00"
-    }
-
-    return dateTime.format(format)
-}
 
 
 
@@ -293,5 +265,5 @@ fun formatToTime(epochSeconds: String): String {
 @Preview(showBackground = true)
 @Composable
 fun Main(){
-WeatherList(listOf(ForecastDateFormat(listOf(WeatherFormatHour(),WeatherFormatHour()))))
+WeatherList(listOf(ForecastDateFormat(hours = listOf(WeatherFormatHour(),WeatherFormatHour()))))
 }

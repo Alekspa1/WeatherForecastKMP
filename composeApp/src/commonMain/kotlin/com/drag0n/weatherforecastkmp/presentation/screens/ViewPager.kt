@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -127,7 +128,6 @@ fun MainWeatherPager(
 
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Gray)
 
         ) { pageIndex ->
 
