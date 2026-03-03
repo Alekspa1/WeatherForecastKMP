@@ -6,5 +6,7 @@ enum class WeatherType {
     RAINY,      // Дождливо
     SNOWY,      // Снежно
     STORMY,     // Гроза
-    FOGGY       // Туман
+    FOGGY, // Туман
+    Overcast, // пасмурно
+    Drizzle // морось
 }

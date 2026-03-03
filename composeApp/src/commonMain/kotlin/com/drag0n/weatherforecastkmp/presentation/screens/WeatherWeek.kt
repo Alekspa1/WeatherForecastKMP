@@ -56,7 +56,6 @@ fun WeatherList(forecastDateFormat: List<ForecastDateFormat>) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
     ) {
         LazyColumn(
 
