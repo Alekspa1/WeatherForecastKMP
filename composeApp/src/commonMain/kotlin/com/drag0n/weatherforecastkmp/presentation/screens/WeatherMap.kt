@@ -19,7 +19,6 @@ fun WeatherMap(coord: Coord) {
     val url =
         "https://www.meteoblue.com/weather/maps/widget/?windAnimation=0&windAnimation=1&gust=0&satellite=0&cloudsAndPrecipitation=0&temperature=0&temperature=1&sunshine=0&extremeForecastIndex=0&geoloc=fixed&tempunit=C&windunit=m%252Fs&lengthunit=metric&zoom=4&autowidth=auto#coords=5/${coord.lat}/${coord.lon}&map=windAnimation~rainbow~auto~10%20m%20above%20gnd~none"
     val webViewState = rememberWebViewState(url)
-    println(url)
 
     // Включаем JS кроссплатформенно
     webViewState.webSettings.isJavaScriptEnabled = true
@@ -31,15 +30,16 @@ fun WeatherMap(coord: Coord) {
     WebView(
         state = webViewState,
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
             // Этот модификатор "съедает" жесты до того, как их увидит Pager или Drawer
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, _ ->
-                        change.consume() // Поглощаем жест, чтобы он не ушел родителю
-                    }
-                )
-            },
+//            .pointerInput(Unit) {
+//                detectDragGestures(
+//                    onDrag = { change, _ ->
+//                        change.consume() // Поглощаем жест, чтобы он не ушел родителю
+//                    }
+//                )
+//            },
+
         onCreated = { nativeView ->
             configureNativeSettings(nativeView)
         }

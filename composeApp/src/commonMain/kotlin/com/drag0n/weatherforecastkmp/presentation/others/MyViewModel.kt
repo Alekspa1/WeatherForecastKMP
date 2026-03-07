@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.drag0n.weatherforecastkmp.domain.WeatherMapper
 import com.drag0n.weatherforecastkmp.domain.model.Coord
 import com.drag0n.weatherforecastkmp.domain.model.WeatherState
+import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
@@ -49,27 +51,27 @@ class MyViewModel(
 
 
 
-
-//    private val _isLoading = MutableStateFlow(false)
-//    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     val stateLocation = MutableSharedFlow<String>(
         replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
+    val stateColors = MutableStateFlow(WeatherColors.Default)
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val weatherFlow = stateLocation.flatMapLatest { location ->
         flow {
             emit(WeatherState.Loading)
             getWeatherDay(location).onSuccess { result ->
-                emit(WeatherState.Success(result))
+                val weatherMapper = WeatherMapper.weatherData(result)
+                val weatherWeek = WeatherMapper.weatherDataList(result.forecast.forecastday, result.location.localtime)
+                val colors = getWeatherColors(weatherMapper.weatherType, weatherMapper.is_day)
+                stateColors.value = colors
+                emit(WeatherState.Success(weatherMapper,weatherWeek))
             }
                 .onFailure { error ->
                     val isNetwork = when (error) {
                         is ConnectTimeoutException, is SocketTimeoutException, is HttpRequestTimeoutException -> true
-
                         is ResponseException -> false
-
                         else -> false
                     }
 
@@ -84,9 +86,8 @@ class MyViewModel(
 
                 }
         }
-//            .onStart { _isLoading.value = true } // Запускаем лоадер перед началом потока
-//            .onCompletion { _isLoading.value = false }
             .catch {
+                println("Error:" + it.message.toString())
                 emit(
                     WeatherState.Error(
                         message = "Произошла неизвестная ошибка", isNetworkError = false
@@ -100,7 +101,6 @@ class MyViewModel(
 
     fun getLocationFun() {
         viewModelScope.launch {
-           // _isLoading.value = true
             val result = getCoord()
             newLocation("${result?.lat},${result?.lon}")
         }

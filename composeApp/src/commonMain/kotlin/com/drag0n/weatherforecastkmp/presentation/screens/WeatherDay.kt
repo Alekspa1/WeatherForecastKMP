@@ -386,6 +386,8 @@ fun Pre() {
     WeatherScreen(
        weather =  WeatherFormatDay(
             "Москва",
+           "",
+           "",
             "24 февраля",
             WeatherType.SUNNY,
             "Трололо",

@@ -58,13 +58,19 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     val location by viewModel.stateLocation.collectAsState(initial = "")
     val titles = listOf("Сегодня", "3 дня", "Карта")
     val pagerState = rememberPagerState(pageCount = { titles.size })
+    val weatherColors by viewModel.stateColors.collectAsState()
 
-    val weatherColors = remember(weather) {
-        if (weather is WeatherState.Success) {
-            val weatherMapper = WeatherMapper.weatherData((weather as WeatherState.Success).weather)
-            getWeatherColors(weatherMapper.weatherType, weatherMapper.is_day)
-        } else WeatherColors.Default
+    val onSearch = remember { { showDialog = true } }
+    val onOpenDrawer = remember {
+        {
+            scope.launch {
+                drawerState.open()
+            }
+            Unit
+        }
     }
+    val onRefresh = remember(viewModel) { { city: String -> viewModel.newLocation(city) } }
+
 
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
@@ -77,96 +83,95 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     LaunchedEffect(Unit) {
         viewModel.getLocationFun() // 👈 ВЫЗЫВАЕМ ЗДЕСЬ
     }
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize()) {
         BoxBackgroundCircle(weatherColors)
         ModalNavigationDrawer(
-                drawerState = drawerState,
-            gesturesEnabled = pagerState.currentPage != 2,
+            drawerState = drawerState,
+            //gesturesEnabled = pagerState.currentPage != 2,
             drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
+                ModalDrawerSheet(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
                     //.windowInsetsPadding(WindowInsets.statusBars)
-            ) {
-                // Контент вашего меню (список городов, настройки и т.д.)
-                Text("Меню управления", modifier = Modifier.padding(16.dp))
-                NavigationDrawerItem(
-                    label = { Text("Настройки") },
-                    selected = false,
-                    onClick = {})
-            }
-        }
-        ) {
-        Scaffold(
-
-            // Обязательно задаем темный фон здесь, чтобы убрать белый экран
-            containerColor = Color.Transparent,
-            bottomBar = {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                        .navigationBarsPadding(),
-                    contentAlignment = Alignment.Center
                 ) {
-                    YandexBannerAd(SharedConfig.YANDEX_BANNER_ID, Modifier.fillMaxWidth())
+                    // Контент вашего меню (список городов, настройки и т.д.)
+                    Text("Меню управления", modifier = Modifier.padding(16.dp))
+                    NavigationDrawerItem(
+                        label = { Text("Настройки") },
+                        selected = false,
+                        onClick = {})
                 }
-
             }
-        ) { innerPadding ->
+        ) {
+            Scaffold(
 
-            // Используем Crossfade для плавного перехода от загрузки к погоде
-            Crossfade(
-                targetState = weather,
-                animationSpec = tween(600),
-                modifier = Modifier.padding(innerPadding)
-            ) { currentWeather ->
-
-                when (currentWeather) {
-                    is WeatherState.Loading -> {
-                        LoadingScreen()
+                // Обязательно задаем темный фон здесь, чтобы убрать белый экран
+                containerColor = Color.Transparent,
+                bottomBar = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                            .navigationBarsPadding(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        YandexBannerAd(SharedConfig.YANDEX_BANNER_ID, Modifier.fillMaxWidth())
                     }
 
-                    is WeatherState.Success -> {
-                        Box(modifier = Modifier.fillMaxSize()){
-                            MainWeatherPager(
-                                onSearchClick = { showDialog = true },
-                                onRefreshClick = { viewModel.newLocation(currentWeather.weather.location.name) },
-                                openDrawerlick = { scope.launch { drawerState.open() } },
-                                currentWeather.weather,
-                                weatherColors,
-                                pagerState,
-                                titles
-                            )
+                }
+            ) { innerPadding ->
+
+                // Используем Crossfade для плавного перехода от загрузки к погоде
+                Crossfade(
+                    targetState = weather,
+                    animationSpec = tween(600),
+                    modifier = Modifier.padding(innerPadding)
+                ) { currentWeather ->
+
+                    when (currentWeather) {
+                        is WeatherState.Loading -> {
+                            LoadingScreen()
                         }
 
-                    }
+                        is WeatherState.Success -> {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                MainWeatherPager(
+                                    onSearchClick = onSearch,
+                                    onRefreshClick = { onRefresh(currentWeather.weather.city) },
+                                    openDrawerlick = onOpenDrawer,
+                                    currentWeather.weather,
+                                    currentWeather.week,
+                                    weatherColors,
+                                    pagerState,
+                                    titles
+                                )
+                            }
 
-                    is WeatherState.Error -> {
-                        ErrorScreen(
-                            currentWeather.message,
-                            currentWeather.isNetworkError
-                        ) {
-                            if (location.isNotEmpty()) viewModel.newLocation(location)
-                            else viewModel.getLocationFun()
+                        }
+
+                        is WeatherState.Error -> {
+                            ErrorScreen(
+                                currentWeather.message,
+                                currentWeather.isNetworkError
+                            ) {
+                                if (location.isNotEmpty()) viewModel.newLocation(location)
+                                else viewModel.getLocationFun()
+                            }
                         }
                     }
+
                 }
 
-            }
-
-            if (showDialog) {
-                CitySearchDialog(
-                    onDismiss = { showDialog = false },
-                    onConfirm = { city ->
-                        viewModel.newLocation(city)
-                        showDialog = false
-                    }
-                )
+                if (showDialog) {
+                    CitySearchDialog(
+                        onDismiss = { showDialog = false },
+                        onConfirm = { city ->
+                            viewModel.newLocation(city)
+                            showDialog = false
+                        }
+                    )
+                }
             }
         }
     }
-    }
-
-
 
 
 }

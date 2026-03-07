@@ -3,6 +3,8 @@ package com.drag0n.weatherforecastkmp.domain.model.weatherForecast
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
 
 data class WeatherFormatDay(
+    val lat: String,
+    val lon: String,
     val city: String,
     val date: String,
     val weatherType: WeatherType,

@@ -1,15 +1,15 @@
 package com.drag0n.weatherforecastkmp.domain
 
 
-import com.drag0n.weatherforecastkmp.domain.model.mapper.ForecastDateFormat
+import com.drag0n.weatherforecastkmp.domain.model.mapper.WeatherFormatWeek
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Forecastday
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Hour
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.Weather
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatDay
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatHour
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -19,7 +19,6 @@ import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToInt
 import kotlin.time.Clock
-import kotlin.time.Instant
 
 object WeatherMapper {
 
@@ -27,7 +26,10 @@ object WeatherMapper {
     fun weatherData(weather: Weather): WeatherFormatDay {
         return WeatherFormatDay(
             city = weather.location.name,
-            date = getCurrentFormattedDate(),
+            lat = weather.location.lat.toString() ,
+            lon = weather.location.lon.toString(),
+           // date = getCurrentFormattedDate(),
+            date = formatToDateWithTime(weather.location.localtime),
             weatherType = typewWeather(weather.current.condition.code),
             icon = "https:${weather.current.condition.icon}",
             temp = "${weather.current.temp_c.roundToInt()}°C",
@@ -45,58 +47,33 @@ object WeatherMapper {
     }
 
 
-    fun weatherDataList(forecast: List<Forecastday>): List<ForecastDateFormat> {
-
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
+    fun weatherDataList(forecast: List<Forecastday>, timeNow: String): List<WeatherFormatWeek> {
 
         return forecast.mapIndexed { dayIndex, forecastday ->
             val hours = (if (dayIndex == 0) {
                 forecastday.hour
-                    .filter { hour -> comparisonOfTime(hour.time_epoch, now) }
+                    .filter { hour -> comparisonOfTime(hour.time, timeNow) }
                     .filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
             } else {
                 forecastday.hour.filterIndexed { hourIndex, _ -> hourIndex % 3 == 0 }
             })
 
 
-            ForecastDateFormat(
-                formatToDate(forecastday.hour[dayIndex].time_epoch),
+            WeatherFormatWeek(
+                formatToDate(forecastday.date),
                 mapeperHour(hours)
             )
         }
     }
 
-    private fun comparisonOfTime(timeEpoch: String, currentTime: LocalTime): Boolean {
-        // 1. Превращаем секунды в объект даты/времени
-        val instant = Instant.fromEpochSeconds(timeEpoch.toLong())
+    fun comparisonOfTime(forecastTimeStr: String, cityLocalTimeStr: String): Boolean {
+        // Парсим обе строки "как есть", игнорируя часовой пояс телефона
+        val forecastDateTime = LocalDateTime.parse(forecastTimeStr.replace(" ", "T"))
+        val currentCityDateTime = LocalDateTime.parse(cityLocalTimeStr.replace(" ", "T"))
 
-        // 2. Получаем локальное время (LocalTime) для текущего часового пояса
-        val hourTime = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
-
-        // 3. Сравниваем (например, 15:00 > 11:30)
-        return hourTime > currentTime
-    }
-
-    private fun getCurrentFormattedDate(): String {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val day = now.day
-
-        val monthName = when (now.month) {
-            Month.JANUARY -> "января"
-            Month.FEBRUARY -> "февраля"
-            Month.MARCH -> "марта"
-            Month.APRIL -> "апреля"
-            Month.MAY -> "мая"
-            Month.JUNE -> "июня"
-            Month.JULY -> "июля"
-            Month.AUGUST -> "августа"
-            Month.SEPTEMBER -> "сентября"
-            Month.OCTOBER -> "октября"
-            Month.NOVEMBER -> "ноября"
-            Month.DECEMBER -> "декабря"
-        }
-
-        return "$day $monthName"
+        // Сравниваем объекты целиком (дата + время)
+        // Это важно, чтобы в 23:00 вечера не отсеклись прогнозы на следующий день
+        return forecastDateTime > currentCityDateTime
     }
 
 
@@ -137,43 +114,58 @@ object WeatherMapper {
         WeatherFormatHour(
             desc = hour.condition.text,
             feelslike_c = "Ощущается как: ${hour.feelslike_c.roundToInt()}°C",
-            humidity = "${hour.humidity} %",
-            pressure = "${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
-            wind = "${(hour.wind_mph / 3.6).roundToInt()} м/с",
-            time = formatToTime(hour.time_epoch),
+            humidity = "Влажность: ${hour.humidity} %",
+            pressure = "Давление: ${(hour.pressure_mb * 0.75006).roundToInt()} мм/рт/ст",
+            wind = "Скорость ветра: ${(hour.wind_kph / 3.6).roundToInt()} м/с",
+            time = formatToTime(hour.time),
             temp = "${hour.temp_c.roundToInt()}°C",
         )
     }
 
-    private val russianMonths = MonthNames(
-        listOf("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
+    val russianMonths = listOf(
+        "янв", "фев", "мар", "апр", "мая", "июня",
+        "июля", "авг", "сен", "окт", "ноя", "дек"
     )
 
-    fun formatToDate(epochSeconds: String): String {
-        val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
-        val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    private val MyDateFormatter = LocalDate.Format {
+        day(Padding.NONE)
+        char(' ')
+        monthName(MonthNames(russianMonths)) // Создаем MonthNames один раз здесь
+    }
 
+    private val TimeOnlyFormatter = LocalDateTime.Format {
+        hour(Padding.ZERO)   // Всегда две цифры (09, 14)
+        char(':')
+        minute(Padding.ZERO) // Всегда две цифры (05, 30)
+    }
+
+    fun formatToDateWithTime(timeString: String): String {
+        // 1. Парсим строку "2024-03-07 11:00" напрямую
+        // Это гарантирует, что дата останется такой, какой её прислал сервер
+        val isoString = timeString.replace(" ", "T")
+        val dateTime = LocalDateTime.parse(isoString)
+
+        // 2. Используем форматтер (0.6.0+)
         val format = LocalDateTime.Format {
-            this@Format.day(padding = Padding.NONE)
-            // Убирает ведущий ноль (будет "1", а не "01")
+            day(Padding.NONE) // Будет "7", а не "07"
             char(' ')
-            monthName(russianMonths)
+            // Используем сокращенные названия месяцев
+            monthName(MonthNames(russianMonths))
         }
 
         return dateTime.format(format)
     }
+    fun formatToDate(timeString: String): String {
+        val cleanDate = timeString.substringBefore(" ")
+        return LocalDate.parse(cleanDate).format(MyDateFormatter)
+    }
 
-    fun formatToTime(epochSeconds: String): String {
-        val instant = Instant.fromEpochSeconds(epochSeconds.toLong())
-        val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    fun formatToTime(timeString: String): String {
+        // 1. Подготовка (WeatherAPI присылает "2024-03-07 15:00")
+        val isoString = timeString.replace(" ", "T")
 
-        val format = LocalDateTime.Format {
-            hour()   // "14"
-            char(':')
-            minute() // "00"
-        }
-
-        return dateTime.format(format)
+        // 2. Парсинг и применение готового шаблона в одну строку
+        return LocalDateTime.parse(isoString).format(TimeOnlyFormatter)
     }
 }
 

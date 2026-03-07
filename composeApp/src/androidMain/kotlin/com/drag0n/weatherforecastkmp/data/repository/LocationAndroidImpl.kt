@@ -66,8 +66,28 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
 
         .isHuaweiMobileServicesAvailable(context) == com.huawei.hms.api.ConnectionResult.SUCCESS
 
+    private suspend fun gmsLastLocation(): Coord? = suspendCancellableCoroutine { cont ->
+        val hasFine = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
-    private suspend fun getGmsLocation(): Coord? = suspendCancellableCoroutine { cont ->
+        if (!hasFine && !hasCoarse) {
+            cont.resume(null)
+            return@suspendCancellableCoroutine
+        }
+
+        gmsClient.lastLocation.addOnSuccessListener { loc ->
+
+            if (cont.isActive) cont.resume(loc?.let {
+                Coord(
+                    it.latitude.toString(),
+                    it.longitude.toString()
+                )
+            })
+
+        }.addOnFailureListener { if (cont.isActive) cont.resume(null) }
+
+    }
+    private suspend fun getLocationGoogle(): Coord? = suspendCancellableCoroutine { cont ->
         val ct = CancellationTokenSource()
         Toast.makeText(context, "Запустился Гугл", Toast.LENGTH_SHORT).show()
         // 1. Проверка разрешений
@@ -153,9 +173,14 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
     }
 
     private suspend fun getHmsLocation(): Coord? {
-
         val last = getLastLocationHuawei()
         return last ?: getLocationHuawei()
+    }
+
+    private suspend fun getGmsLocation(): Coord? {
+        val last = gmsLastLocation()
+        Toast.makeText(context, "Last $last", Toast.LENGTH_SHORT).show()
+        return last ?: getLocationGoogle()
     }
 
 
