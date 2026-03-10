@@ -10,15 +10,11 @@ import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatH
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherType
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.Month
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.char
-import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToInt
-import kotlin.time.Clock
 
 object WeatherMapper {
 
@@ -28,7 +24,6 @@ object WeatherMapper {
             city = weather.location.name,
             lat = weather.location.lat.toString() ,
             lon = weather.location.lon.toString(),
-           // date = getCurrentFormattedDate(),
             date = formatToDateWithTime(weather.location.localtime),
             weatherType = typewWeather(weather.current.condition.code),
             icon = "https:${weather.current.condition.icon}",
@@ -119,6 +114,7 @@ object WeatherMapper {
             wind = "Скорость ветра: ${(hour.wind_kph / 3.6).roundToInt()} м/с",
             time = formatToTime(hour.time),
             temp = "${hour.temp_c.roundToInt()}°C",
+            icon = "https:${hour.condition.icon}"
         )
     }
 

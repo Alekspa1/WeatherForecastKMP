@@ -47,7 +47,6 @@ fun MainWeatherPager(
     openDrawerlick: () -> Unit = {},
     weatherDay: WeatherFormatDay,
     weatherWeek: List<WeatherFormatWeek>,
-    weatherColors: WeatherColors,
     pagerState: PagerState,
     titles: List<String>
 
@@ -72,7 +71,7 @@ fun MainWeatherPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
-                .background(weatherColors.cardColor), // Row будет высотой с TabRow
+                .background(WeatherColors.Default.cardColor), // Row будет высотой с TabRow
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
@@ -113,7 +112,7 @@ fun MainWeatherPager(
                         },
                         // ЦВЕТА ТЕКСТА И ИКОНОК
                         selectedContentColor = Color.White,    // Активный — БЕЛЫЙ
-                        unselectedContentColor = Color.Gray,   // Неактивный — СЕРЫЙ
+                        unselectedContentColor = Color.Black,   // Неактивный — Черный
                         text = {
                             Text(
                                 text = title,
@@ -146,8 +145,7 @@ fun MainWeatherPager(
                     WeatherScreen(
                         onSearchClick = { onSearchClick() },
                         onRefreshClick = { onRefreshClick() },
-                        weather = weatherDay,
-                        weatherColors = weatherColors
+                        weather = weatherDay
                     )
                 }      // Твой первый экран
 

@@ -73,7 +73,7 @@ fun WeatherScreen(
     weather: WeatherFormatDay, // Добавляем параметр
     onSearchClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {},
-    weatherColors: WeatherColors
+    weatherColors: WeatherColors = WeatherColors.Default
 ) {
     // Обработчик нажатия на кнопку обновления
 

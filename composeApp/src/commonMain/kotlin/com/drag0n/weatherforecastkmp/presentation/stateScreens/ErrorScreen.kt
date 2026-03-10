@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +31,8 @@ import androidx.compose.ui.unit.dp
 fun ErrorScreen(
     message: String,
     isNetwork: Boolean,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onSearch: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -68,9 +70,22 @@ fun ErrorScreen(
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = null)
+            Icon(Icons.Default.Search, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("Попробовать снова")
+        }
+
+        Button(
+            onClick = onSearch,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White.copy(alpha = 0.1f), // Полупрозрачная кнопка
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Refresh, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Поиск другого города")
         }
     }
 }

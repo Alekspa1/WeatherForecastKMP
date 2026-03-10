@@ -43,7 +43,7 @@ data class WeatherColors(
             detailIconTint3 = Color(0xFFE1F5FE),
             sunIconTint = Color(0xFFFFD600),
             sunsetIconTint = Color(0xFFFFAB40),
-            cardColor = Color.White.copy(alpha = 0.1f),
+            cardColor = Color(0x80ADD8E6),
             surfaceColor = Color(0xFF121212),
             buttonColor = Color(0xFF3F51B5),
             buttonTextColor = Color.White,

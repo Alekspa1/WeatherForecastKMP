@@ -1,7 +1,6 @@
 package com.drag0n.weatherforecastkmp.presentation.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,15 +15,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,9 +35,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.drag0n.weatherforecastkmp.domain.model.mapper.WeatherFormatWeek
 import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatHour
 
@@ -43,7 +48,6 @@ import com.drag0n.weatherforecastkmp.domain.model.weatherForecast.WeatherFormatH
 @Composable
 fun WeatherList(weatherFormatWeek: List<WeatherFormatWeek>) {
 
-    SideEffect { println("Recomposing Screen...") }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -61,14 +65,16 @@ fun WeatherList(weatherFormatWeek: List<WeatherFormatWeek>) {
             contentPadding = PaddingValues(8.dp)
 
         ) {
-            weatherFormatWeek.forEachIndexed { index, format ->
+            weatherFormatWeek.forEach { format ->
 
-                item {
+                item(key = format.date) {
                     if (format.hours.isNotEmpty()) {
-                        Text(text = weatherFormatWeek[index].date , color = Color.White)
+                        Text(text = format.date, color = Color.White)
                     }
                 }
-                items(items = format.hours) { item ->
+                items(
+                    items = format.hours,
+                    key = { hour -> "${format.date}_${hour.time}" }) { item ->
 
                     ItemWeather(item) // Вызываем твою Composable функцию
 
@@ -94,9 +100,9 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
             .fillMaxWidth()
 
-            //.padding(8.dp) // Внешний отступ, чтобы карточки не липли к краям экрана
+        //.padding(8.dp) // Внешний отступ, чтобы карточки не липли к краям экрана
 
-            .animateContentSize()
+        //.animateContentSize()
 
     ) {
 
@@ -131,7 +137,8 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                     textAlign = TextAlign.End,
 
-                    style = MaterialTheme.typography.titleSmall // Сделаем текст чуть аккуратнее
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White // Сделаем текст чуть аккуратнее
 
                 )
 
@@ -143,12 +150,10 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                 ) {
 
-                    Text(hour.time , style = MaterialTheme.typography.titleSmall)
-
                     Text(
-                        "❄️",
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) // Заменил текст на эмодзи для наглядности
+                        hour.time, style = MaterialTheme.typography.titleSmall,
+                        color = Color.White
+                    )
 
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -159,7 +164,8 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                         text = hour.temp,
 
-                        style = MaterialTheme.typography.titleSmall
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White
 
                     )
 
@@ -208,28 +214,32 @@ fun ItemWeather(hour: WeatherFormatHour) {
 
                     Text(
 
-                        text = hour.feelslike_c
+                        text = hour.feelslike_c,
+                        color = Color.White
 
 
                     )
 
                     Text(
 
-                        text = hour.pressure
+                        text = hour.pressure,
+                        color = Color.White
 
 
                     )
 
                     Text(
 
-                        text = hour.humidity
+                        text = hour.humidity,
+                        color = Color.White
 
 
                     )
 
                     Text(
 
-                        text = hour.wind
+                        text = hour.wind,
+                        color = Color.White
 
 
                     )
@@ -247,13 +257,8 @@ fun ItemWeather(hour: WeatherFormatHour) {
 }
 
 
-
-
-
-
-
 @Preview(showBackground = true)
 @Composable
-fun Main(){
-WeatherList(listOf(WeatherFormatWeek(hours = listOf(WeatherFormatHour(),WeatherFormatHour()))))
+fun Main() {
+    WeatherList(listOf(WeatherFormatWeek(hours = listOf(WeatherFormatHour(), WeatherFormatHour()))))
 }

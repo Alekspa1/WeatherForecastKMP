@@ -139,7 +139,6 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                                     openDrawerlick = onOpenDrawer,
                                     currentWeather.weather,
                                     currentWeather.week,
-                                    weatherColors,
                                     pagerState,
                                     titles
                                 )
@@ -150,11 +149,11 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
                         is WeatherState.Error -> {
                             ErrorScreen(
                                 currentWeather.message,
-                                currentWeather.isNetworkError
-                            ) {
-                                if (location.isNotEmpty()) viewModel.newLocation(location)
-                                else viewModel.getLocationFun()
-                            }
+                                currentWeather.isNetworkError,
+                                onRetry = {if (location.isNotEmpty()) viewModel.newLocation(location)
+                                else viewModel.getLocationFun()},
+                                onSearch = onSearch
+                            )
                         }
                     }
 

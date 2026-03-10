@@ -10,5 +10,5 @@ data class Hour(
     val pressure_mb: Double,
     val temp_c: Double,
     val time: String,
-    val wind_kph: Double
+    val wind_kph: Double,
 )

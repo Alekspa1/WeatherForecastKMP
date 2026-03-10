@@ -45,9 +45,9 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
 
 
         val coords = when {
-            isGoogleAvailable() -> getGmsLocation()
+            isGoogleAvailable() -> getLocationGoogle()
             isHuaweiAvailable() -> getHmsLocation()
-            else -> {Toast.makeText(context, "Запустился ip", Toast.LENGTH_SHORT).show()
+            else -> {
                 locationInIp.getCurrentLocation()
 
             }
@@ -66,30 +66,8 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
 
         .isHuaweiMobileServicesAvailable(context) == com.huawei.hms.api.ConnectionResult.SUCCESS
 
-    private suspend fun gmsLastLocation(): Coord? = suspendCancellableCoroutine { cont ->
-        val hasFine = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
-        if (!hasFine && !hasCoarse) {
-            cont.resume(null)
-            return@suspendCancellableCoroutine
-        }
-
-        gmsClient.lastLocation.addOnSuccessListener { loc ->
-
-            if (cont.isActive) cont.resume(loc?.let {
-                Coord(
-                    it.latitude.toString(),
-                    it.longitude.toString()
-                )
-            })
-
-        }.addOnFailureListener { if (cont.isActive) cont.resume(null) }
-
-    }
     private suspend fun getLocationGoogle(): Coord? = suspendCancellableCoroutine { cont ->
         val ct = CancellationTokenSource()
-        Toast.makeText(context, "Запустился Гугл", Toast.LENGTH_SHORT).show()
         // 1. Проверка разрешений
         val hasFine = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val hasCoarse = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -119,7 +97,6 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
 
 
     private suspend fun getLastLocationHuawei(): Coord? = suspendCancellableCoroutine { cont ->
-        Toast.makeText(context, "Запустился последний хуавей", Toast.LENGTH_SHORT).show()
         hmsClient.lastLocation
             .addOnSuccessListener { loc ->
                 if (cont.isActive) {
@@ -132,7 +109,6 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
     }
 
     private suspend fun getLocationHuawei(): Coord? {
-        Toast.makeText(context, "Запустился текущий хуавей", Toast.LENGTH_SHORT).show()
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) return null
@@ -177,11 +153,6 @@ class LocationAndroidImpl(private val context: Context, private val locationInIp
         return last ?: getLocationHuawei()
     }
 
-    private suspend fun getGmsLocation(): Coord? {
-        val last = gmsLastLocation()
-        Toast.makeText(context, "Last $last", Toast.LENGTH_SHORT).show()
-        return last ?: getLocationGoogle()
-    }
 
 
 
