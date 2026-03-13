@@ -13,6 +13,8 @@ import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
+import com.drag0n.weatherforecastkmp.room.Dao
+import com.drag0n.weatherforecastkmp.room.WeatherDataBase
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -37,6 +39,7 @@ class MyViewModel(
     private val getCoord: GetCurrentLocationUseCase,
     private val isGpsEnable: IsGpsEnabledUseCase,
     private val isPermission: IsPermissionUseCase,
+    private val room: Dao
 ) : ViewModel() {
 
 

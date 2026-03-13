@@ -10,7 +10,19 @@ plugins {
     alias(libs.plugins.composeHotReload)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
     id("com.codingfeline.buildkonfig") version "0.17.1"
+    id("com.google.devtools.ksp") version "2.3.0"
+    id("androidx.room") version "2.8.4"
 }
+room {
+    // Указывает Room, куда сохранять JSON-схемы базы данных
+    schemaDirectory("$projectDir/schemas")
+}
+
+
+
+
+
+
 
 buildkonfig {
     packageName = "com.drag0n.weatherforecastkmp"
@@ -40,7 +52,9 @@ buildkonfig {
     }
 }
 
+
 kotlin {
+
     applyDefaultHierarchyTemplate()
     androidTarget {
         compilerOptions {
@@ -73,6 +87,11 @@ kotlin {
 
         }
         commonMain.dependencies {
+
+            implementation(libs.androidx.room.runtime)
+            // Драйвер SQLite (обязателен для KMP)
+            implementation(libs.androidx.sqlite.bundled)
+
             implementation(libs.compose.webview.multiplatform)
             implementation(libs.material.icons.extended)
             implementation(libs.koin.compose.viewmodel)
@@ -159,6 +178,8 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+     add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.4")
+
 }
 
 compose.desktop {

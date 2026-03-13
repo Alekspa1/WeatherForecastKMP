@@ -11,6 +11,7 @@ import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.others.MyViewModel
+import com.drag0n.weatherforecastkmp.room.WeatherDataBase
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.DefaultRequest
@@ -33,7 +34,7 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 expect val moduleLocation: Module
-
+expect fun platformDatabaseModule(): Module
 
 
 val appModule = module {
@@ -80,7 +81,7 @@ val appModule = module {
 
     single<WeatherRepository> { WeatherImp(get()) }
     single<LocationRepository>(named("IP_LOCATION")) { GetcoordInIpImpl(get()) }
-
+    single { get<WeatherDataBase>().weatherDao() }
 
     factory<GetWeatherUseCase> { GetWeatherUseCase(get()) }
     factory<GetCurrentLocationUseCase> { GetCurrentLocationUseCase(get()) }
@@ -95,7 +96,7 @@ val appModule = module {
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
-        modules(appModule, moduleLocation)
+        modules(appModule, moduleLocation, platformDatabaseModule())
     }
 }
 
