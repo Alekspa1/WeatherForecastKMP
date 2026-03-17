@@ -4,9 +4,9 @@ import androidx.room.Room
 import com.drag0n.weatherforecastkmp.data.repository.LocationIosImpl
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.PermissionRepository
-import com.drag0n.weatherforecastkmp.room.AppDatabaseConstructor
-import com.drag0n.weatherforecastkmp.room.WeatherDataBase
-import com.drag0n.weatherforecastkmp.room.getRoomDatabase
+import com.drag0n.weatherforecastkmp.data.room.AppDatabaseConstructor
+import com.drag0n.weatherforecastkmp.data.room.WeatherDataBase
+import com.drag0n.weatherforecastkmp.data.room.getRoomDatabase
 import org.koin.core.qualifier.named
 import org.koin.dsl.binds
 import org.koin.dsl.module

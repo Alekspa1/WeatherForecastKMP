@@ -1,4 +1,4 @@
-package com.drag0n.weatherforecastkmp.room
+package com.drag0n.weatherforecastkmp.data.room
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -6,15 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drag0n.weatherforecastkmp.domain.WeatherMapper
-import com.drag0n.weatherforecastkmp.domain.model.Coord
 import com.drag0n.weatherforecastkmp.domain.model.WeatherState
 import com.drag0n.weatherforecastkmp.domain.model.weatherType.WeatherColors
 import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
-import com.drag0n.weatherforecastkmp.room.Dao
-import com.drag0n.weatherforecastkmp.room.WeatherDataBase
+import com.drag0n.weatherforecastkmp.data.room.Dao
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -24,13 +22,9 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 

@@ -4,6 +4,8 @@ package com.drag0n.weatherforecastkmp.data.di
 
 import com.drag0n.weatherforecastkmp.data.repository.GetcoordInIpImpl
 import com.drag0n.weatherforecastkmp.data.repository.WeatherImp
+import com.drag0n.weatherforecastkmp.data.room.WeatherDataBase
+
 import com.drag0n.weatherforecastkmp.domain.repository.LocationRepository
 import com.drag0n.weatherforecastkmp.domain.repository.WeatherRepository
 import com.drag0n.weatherforecastkmp.domain.useCases.GetCurrentLocationUseCase
@@ -11,19 +13,13 @@ import com.drag0n.weatherforecastkmp.domain.useCases.GetWeatherUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsGpsEnabledUseCase
 import com.drag0n.weatherforecastkmp.domain.useCases.permission.IsPermissionUseCase
 import com.drag0n.weatherforecastkmp.presentation.others.MyViewModel
-import com.drag0n.weatherforecastkmp.room.WeatherDataBase
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.SocketTimeoutException
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.header
-import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
@@ -83,6 +79,7 @@ val appModule = module {
     single<LocationRepository>(named("IP_LOCATION")) { GetcoordInIpImpl(get()) }
     single { get<WeatherDataBase>().weatherDao() }
 
+
     factory<GetWeatherUseCase> { GetWeatherUseCase(get()) }
     factory<GetCurrentLocationUseCase> { GetCurrentLocationUseCase(get()) }
     factory<IsGpsEnabledUseCase> { IsGpsEnabledUseCase(get()) }
@@ -92,6 +89,8 @@ val appModule = module {
     viewModelOf(::MyViewModel)
 
 }
+
+
 
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {

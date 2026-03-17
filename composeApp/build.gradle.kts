@@ -179,6 +179,8 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
      add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.4")
+    add("kspAndroid", "androidx.room:room-compiler:2.8.4")
+    add("kspJvm", "androidx.room:room-compiler:2.8.4")
 
 }
 
