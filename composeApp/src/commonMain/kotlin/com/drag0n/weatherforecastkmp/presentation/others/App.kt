@@ -17,6 +17,8 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -50,7 +52,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 
 fun App(viewModel: MyViewModel = koinViewModel()) {
-
+    val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -64,7 +66,8 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
     val onOpenDrawer = remember {
         {
             scope.launch {
-                drawerState.open()
+                //drawerState.open()
+                snackbarHostState.showSnackbar("Меню появится в следующих обновлениях")
             }
             Unit
         }
@@ -87,12 +90,10 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
         BoxBackgroundCircle(weatherColors)
         ModalNavigationDrawer(
             drawerState = drawerState,
-            //gesturesEnabled = pagerState.currentPage != 2,
             drawerContent = {
                 ModalDrawerSheet(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                    //.windowInsetsPadding(WindowInsets.statusBars)
                 ) {
                     // Контент вашего меню (список городов, настройки и т.д.)
                     Text("Меню управления", modifier = Modifier.padding(16.dp))
@@ -105,7 +106,7 @@ fun App(viewModel: MyViewModel = koinViewModel()) {
         ) {
             Scaffold(
 
-                // Обязательно задаем темный фон здесь, чтобы убрать белый экран
+                snackbarHost = { SnackbarHost(snackbarHostState) },
                 containerColor = Color.Transparent,
                 bottomBar = {
                     Box(

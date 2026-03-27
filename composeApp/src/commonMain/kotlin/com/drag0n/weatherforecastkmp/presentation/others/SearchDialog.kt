@@ -9,12 +9,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun CitySearchDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onDismiss: () -> Unit = {},
+    onConfirm: (String) -> Unit = {}
 ) {
     var text by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -26,9 +28,15 @@ fun CitySearchDialog(
         text = {
             Column {
                 OutlinedTextField(
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Gray,
+                        focusedTextColor = Color.Black,
+                        disabledTextColor = Color.Blue,
+                        unfocusedTextColor = Color.Red)
+                    ,
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Введите название") },
+                    label = { Text(text = "Введите название", color = Color.Black) },
                     singleLine = true,
                     modifier = Modifier
                         .padding(top = 8.dp)
@@ -38,15 +46,20 @@ fun CitySearchDialog(
         },
         confirmButton = {
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.White,
+                    containerColor = Color.Black,
+
+                ),
                 enabled = text.isNotBlank(), // Валидация: кнопка активна только с текстом
-                onClick = { onConfirm(text) }
+                onClick = { onConfirm(text.trim()) }
             ) {
-                Text("ОК")
+                Text(text = "ОК")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Отмена")
+                Text(text = "Отмена", color = Color.Black)
             }
         }
     )
@@ -55,4 +68,10 @@ fun CitySearchDialog(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
+}
+
+@Preview
+@Composable
+fun Test(){
+    CitySearchDialog()
 }

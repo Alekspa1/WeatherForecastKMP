@@ -70,7 +70,7 @@ fun ErrorScreen(
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(Icons.Default.Search, contentDescription = null)
+            Icon(Icons.Default.Refresh, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("Попробовать снова")
         }
@@ -83,7 +83,7 @@ fun ErrorScreen(
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = null)
+            Icon(Icons.Default.Search, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("Поиск другого города")
         }
