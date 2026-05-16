@@ -21,7 +21,7 @@ jobs:
 
       # Компилируем Android-версию
       - name: Build Android Project
-        run: ./gradlew assembleDebug
+        run: ./gradlew :composeApp:testDebugUnitTest
 
   # Задача 2: Проверка iOS-части
   build-ios:
@@ -41,4 +41,4 @@ jobs:
 
       # Компилируем Kotlin-код в iOS фреймворк
       - name: Build iOS Framework
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+        run: ./gradlew :composeApp:iosX64Test
