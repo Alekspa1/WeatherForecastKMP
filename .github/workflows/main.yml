@@ -41,4 +41,4 @@ jobs:
 
       # Компилируем Kotlin-код в iOS фреймворк
       - name: Build iOS Framework
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosX64
+       run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
