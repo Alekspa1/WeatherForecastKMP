@@ -24,7 +24,7 @@ jobs:
         run: ./gradlew assembleDebug
 
   # Задача 2: Проверка iOS-части
-    build-ios:
+  build-ios:
     runs-on: macos-latest # macOS необходим для iOS-компиляции
     steps:
       - name: Checkout code
@@ -41,4 +41,4 @@ jobs:
 
       # Компилируем Kotlin-код в iOS фреймворк
       - name: Build iOS Framework
-       run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
